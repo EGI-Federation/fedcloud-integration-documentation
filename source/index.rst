@@ -16,15 +16,9 @@ Common prerequirements and documentation
 
 General minimal requirements are:
 
-* Very minimal hardware is required to join. Hardware requirements depend on:
+* Hardware requirements greatly depend on your cloud infrastructure, EGI components in general do lightweigth operations by interacting with your services APIs. `cloudkeeper` requires enough disk space to download and convert images before uploading into your local catalogue. The number and size of images which will be downloaded depends on the communities you plan to support. For the piloting VO `fedcloud.egi.eu`, 100GB of disk should be enough.
 
-  - the cloud stack you use
-
-  - the amount of resources you want to make available
-
-  - the number of users/use cases you want to support
-
-* Servers need to authenticate each other in the EGI Federated Cloud context; this is fulfilled using X.509 certificates, so a Resource Centre should be able to obtain server certificates for some services.
+* Servers need to authenticate each other in the EGI Federated Cloud context using X.509 certificates. So a Resource Centre should be able to obtain server certificates for some services.
 
 * User and research communities are called Virtual Organisations (VO). Resource Centres are expected to join:
 
@@ -53,6 +47,7 @@ You can follow dedicated integration guides for each cloud management framework:
    :maxdepth: 1
 
    opennebula
+   openstack
 
 .. From MAN10
    * OpenNebula
@@ -71,14 +66,27 @@ Registration of services in GOCDB
 
 Site cloud services must be registered in `EGI Configuration Management Database (GOCDB) <https://goc.egi.eu>`_. If you are creating a new site for your cloud services, check the `PROC09 Resource Centre Registration and Certification <https://wiki.egi.eu/wiki/PROC09>`_ procedure. Services can also coexist within an existing (grid) site.
 
-If offering OCCI interface, sites should register the following services:
-* eu.egi.cloud.vm-management.occi for the OCCI endpoint offered by the site. Please note the special endpoint URL syntax described at `GOCDB usage in FedCloud <https://wiki.egi.eu/wiki/Federated_Cloud_Technology#eu.egi.cloud.vm-management.occi>`_
+These are the expected services for a working site:
 
-* eu.egi.cloud.accounting (host should be your OCCI machine)
+* **Site-BDII**. This service collects and publishes site's data for the Information System. Existing sites should already have this registered.
 
-* eu.egi.cloud.vm-metadata.vmcatcher (also host is your OCCI machine)
+* **eu.egi.cloud.accounting**. Register here the host sending the records to the accounting repository (executing SSM send).
 
-* Site should also declare the following properties using the *Site Extension Properties* feature:
+* **eu.egi.cloud.vm-metadata.vmcatcher** for the VMI replication mechanism. Register here the host providing the replication.
+
+If offering OCCI interface, sites should register:
+
+* **eu.egi.cloud.vm-management.occi** for the OCCI endpoint offered by the site. Please note the special endpoint URL syntax described at `GOCDB usage in FedCloud <https://wiki.egi.eu/wiki/Federated_Cloud_Technology#eu.egi.cloud.vm-management.occi>`_
+
+If offering native OpenStack access, register:
+
+* **org.openstack.nova** for the Nova endpoint of the site.  Please note the special endpoint URL syntax described at [[Federated_Cloud_Technology#org.openstack.nova|GOCDB usage in FedCloud]]
+
+* **TODO** (swift)
+
+.. TODO: CLARIFY IF THIS IS TRUE, not bringing any value atm
+
+Site should also declare the following properties using the *Site Extension Properties* feature:
 
   #. Max number of virtual cores for VM with parameter name: ``cloud_max_cores4VM``
 
@@ -89,7 +97,11 @@ If offering OCCI interface, sites should register the following services:
 Installation Validation
 -----------------------
 
-You can check your installation following these steps:
+.. TODO: quite outdated
+
+Once the site services are registered in GOCDB (and flagged as "monitored") they will appear in the EGI service monitoring tools. EGI will check the status of the services (see `Infrastructure Status <https://wiki.egi.eu/wiki/Federated_Cloud_infrastructure_status>`_ for details). Check if your services are present in the EGI service monitoring tools and passing the tests; if you experience any issues (services not shown, services are not OK...) please contact back EGI Operations or your reference Resource Infrastructure.
+
+Extra checks for your installation:
 
 * Check in `ARGO-Mon2 <https://argo-mon2.egi.eu/nagios>`_ that your services are listed and are passing the tests. If all the tests are OK, your installation is already in good shape.
 
