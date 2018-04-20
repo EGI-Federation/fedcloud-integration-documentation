@@ -15,9 +15,9 @@ Integration with FedCloud requires a *working OpenStack installation* as a pre-r
 
 * Swift (if providing Object Storage)
 
-FedCloud components are distributed through `CMD (Cloud Middleware Distribution) <https://wiki.egi.eu/wiki/EGI_Cloud_Middleware_Distribution>`_ or docker container images available in dockerhub. These docker containers come pre-packaged and ready to use in the EGI FedCloud Appliance so you do not need to install any extra components on your site but just run a VM and configure it approprietely to interact with your services. 
+FedCloud components are distributed through `CMD (Cloud Middleware Distribution) <https://wiki.egi.eu/wiki/EGI_Cloud_Middleware_Distribution>`_ or docker container images available in dockerhub. These docker containers come pre-packaged and ready to use in the EGI FedCloud Appliance so you do not need to install any extra components on your site but just run a VM and configure it approprietely to interact with your services.
 
-The integration is performed by a set of EGI components that interact with the OpenStack services APIs: 
+The integration is performed by a set of EGI components that interact with the OpenStack services APIs:
 
 .. image:: /_static/OpenStackSite.png
 
@@ -25,13 +25,13 @@ The integration is performed by a set of EGI components that interact with the O
 
 * **cloud-info-provider** registers the RC configuration and description through the EGI Information System to facilitate service discovery
 
-* **cloudkeeper** (and **cloudkeeper-os**) synchronises with `EGI AppDB <https://appdb.egi.eu/browse/cloud>`_  so new or updated images can be provided by the RC to user communities (VO). 
+* **cloudkeeper** (and **cloudkeeper-os**) synchronises with `EGI AppDB <https://appdb.egi.eu/browse/cloud>`_  so new or updated images can be provided by the RC to user communities (VO).
 
 Not all EGI components need to share the same credentials. They are individually configured, you can use different credentials and permissions if desired.
 
 Authentication by EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to  allow users with a valid VOMS proxy to obtain tokes to access your OpenStack deployment.
 
-Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API and OCCI. 
+Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API and OCCI.
 
 
 .. TODO
@@ -52,14 +52,14 @@ VOMS Support
 
 Support for authenticating users with X.509 certificates with VOMS extensions is achieved with Keystone-VOMS extension. Documentation is available at https://keystone-voms.readthedocs.io/en/stable-ocata/
 
-Notes: 
+Notes:
 
-* **You need a host certificate from a recognised CA for your keystone server**. 
+* **You need a host certificate from a recognised CA for your keystone server**.
 
 * Take into account that using keystone-voms plugin will **enforce the use of https for your Keystone service**, you will need to update your URLs in the configuration of your services if your current installation is not using https:
 
   * you will probably need to include your CA to your system's CA bundle to avoid certificate validation issues: Check the `Federated Cloud OpenStack Client guide <https://wiki.egi.eu/wiki/Federated_Cloud_APIs_and_SDKs#CA_CertificatesCheck>`_ on how to do it.
-  * replace http with https in ``auth_[protocol|uri|url]`` and ``auth_[host|uri|url]`` in the nova, cinder, glance and neutron config files (``/etc/nova/nova.conf``, ``/etc/nova/api-paste.ini``, ``/etc/neutron/neutron.conf``, ``/etc/neutron/api-paste.ini``, ``/etc/neutron/metadata_agent.ini``, ``/etc/cinder/cinder.conf``, ``/etc/cinder/api-paste.ini``, ``/etc/glance/glance-api.conf``, ``/etc/glance/glance-registry.conf``, ``/etc/glance/glance-cache.conf``) and any other service that needs to check keystone tokens. 
+  * replace http with https in ``auth_[protocol|uri|url]`` and ``auth_[host|uri|url]`` in the nova, cinder, glance and neutron config files (``/etc/nova/nova.conf``, ``/etc/nova/api-paste.ini``, ``/etc/neutron/neutron.conf``, ``/etc/neutron/api-paste.ini``, ``/etc/neutron/metadata_agent.ini``, ``/etc/cinder/cinder.conf``, ``/etc/cinder/api-paste.ini``, ``/etc/glance/glance-api.conf``, ``/etc/glance/glance-registry.conf``, ``/etc/glance/glance-cache.conf``) and any other service that needs to check keystone tokens.
 
   * Update the URLs of the services directly in the database:
 
@@ -76,7 +76,7 @@ Notes:
 EGI VM Management (optional)
 ::::::::::::::::::::::::::::
 
-Follow the `installation and configuration manual of ooi <http://ooi.readthedocs.org/en/stable/index.html>`_. 
+Follow the `installation and configuration manual of ooi <http://ooi.readthedocs.org/en/stable/index.html>`_.
 
 .. TODO: packages?
 
@@ -110,12 +110,12 @@ Once the OCCI interface is installed, you should register it on your installatio
 Other components
 ::::::::::::::::
 
-There are two options to install the remaining Accounting, Information System and Image Management components: 
+There are two options to install the remaining Accounting, Information System and Image Management components:
 
 * Using the EGI FedCloud Appliance (recommended), which uses docker containers to bundle an OpenStack deployment of the corresponding services
 
 * Using individual components.
-  
+
 Follow the guides below according to your preferences
 
 FedCloud Appliance
@@ -123,7 +123,7 @@ FedCloud Appliance
 
 The EGI FedCloud Appliance is available at `AppDB <https://appdb.egi.eu/store/vappliance/fedcloud.integration.appliance.openstack>`_ as an OVA file. You can easily extract the VMDK disk by untaring and optionally converting it to your preferred format with qemu-img:
 
-:: 
+::
 
     # get image and extract VMDK
     curl https://cephrgw01.ifca.es:8080/swift/v1/egi_endorsed_vas/FedCloud-Appliance.Ubuntu.16.04-2017.08.09.ova | \
@@ -133,13 +133,13 @@ The EGI FedCloud Appliance is available at `AppDB <https://appdb.egi.eu/store/va
 
 The VM running at your OpenStack must:
 
-* Be accessible via public IP with port 2170 open for external connections. 
+* Be accessible via public IP with port 2170 open for external connections.
 
 * Have a host certificate to send the accounting information to the accounting repository. DN of the host certificate must be registered in GOCDB service type eu.egi.cloud.accounting. The host certificate and key in PEM format are expected in /etc/grid-security/hostcert.pem and /etc/grid-security/hostkey.pem respectively.
 
 * Have enough disk space for handling the VM image replication (~ 100GB for `fedcloud.egi.eu` VO). By default these are stored at /image_data. You can mount a volume at that location.
 
-EGI Accounting 
+EGI Accounting
 ~~~~~~~~~~~~~~
 
 There are two different processes handling the accounting integration:
@@ -158,7 +158,7 @@ They are run by cron every hour (cASO) and every six hours (ssmsend).
 
 * credentials to access the accounting data (lines 28-47, more options also available). Check the `cASO documentation <http://caso.readthedocs.org/en/latest/configuration.html#openstack-configuration>`_ for the expected permissions of the user configured here.
 
-The cron job will use the voms mapping file at ``/etc/voms.json``. 
+The cron job will use the voms mapping file at ``/etc/voms.json``.
 
 cASO will write records to ``/var/spool/apel`` from where ssmsend will take them.
 
@@ -257,7 +257,7 @@ cloudkeeper core is run every 4 hours with a cron script.
 Individual Components
 '''''''''''''''''''''
 
-EGI Accounting 
+EGI Accounting
 ~~~~~~~~~~~~~~
 
 
@@ -271,7 +271,7 @@ In order to send the records to the accounting database, you will also need to c
 EGI Information System
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Sites must publish information to EGI information system which is based on BDII. The BDII can be installed easily directly from the distribution repository, the package is usually named "bdii". 
+Sites must publish information to EGI information system which is based on BDII. The BDII can be installed easily directly from the distribution repository, the package is usually named "bdii".
 
 There is a common cloud information provider for all cloud management frameworks that collects the information from the used CMF and send them to the aforementioned BDII. It can be installed on the same machine as the BDII or on another machine. The installation and configuration guide for the cloud information provider can be found in the following `Fedclouds BDII instructions <https://wiki.egi.eu/wiki/HOWTO15>`_.
 
