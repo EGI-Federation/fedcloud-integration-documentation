@@ -1,5 +1,5 @@
-OpenStack Ocata
-```````````````
+OpenStack
+`````````
 
 Integration with FedCloud requires a *working OpenStack installation* as a pre-requirement (see http://docs.openstack.org/ for details). This manual provides information on how to set up a Resource Centre providing cloud resources in the EGI infrastructure, using **OpenStack Ocata**. EGI expect the following OpenStack services to be available and accessible from outside the site:
 
@@ -44,13 +44,353 @@ EGI AAI
 OpenID Connect Support
 ''''''''''''''''''''''
 
-TO IMPORT FROM AAI GUIDE
+The integration of OpenStack service providers into the EGI CheckIn is a two-step process:
+
+#. Test integration with the development instance of EGI CheckIn. This will allow you to check complete the complete functionality of the system without affecting  the production CheckIn service.
+
+#. Once the integration is working correctly, register your provider with the production instance of EGI CheckIn to allow members of the EGI User Community to access your service.
+
+Registration into CheckIn development instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before your service can use the EGI CheckIn OIDC Provider for user login, you must set up a client at https://aai-dev.egi.eu/oidc/manage/#admin/clients in order to obtain OAuth 2.0 credentials and register one or more redirect URIs.
+
+Make sure that you fill in the following options:
+
+* Main tab:
+
+    * Set redirect URL to ``https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/oidc/redirect``. Recent versions of OpenStack may deploy Keystone at ``/identity/``, be sure to include that in the ``<your keystone endpoint>`` part of the URL if needed.
+
+* Access tab:
+
+    * Enable '''authorization code''' in the grant type
+    * Enable '''Introspection Allow calls to the Introspection Endpoint?'''
+
+Once done, you will get a client id and client secret. Save them for the following steps
+
+Keystone setup
+~~~~~~~~~~~~~~
+
+Pre-requisites
+""""""""""""""
+
+#. Keystone must run as a WSGI application behind an HTTP server (Apache is used in this documentation, but any server should be possible if it has OpenID connect/OAuth2.0 support). Keystone project has deprecated eventlet, so you should be already running Keystone in such way.
+
+#. Keystone must be run with SSL
+
+#. You need to install [https://github.com/pingidentity/mod_auth_openidc mod_auth_openidc] for adding support for OpenID Connect to Apache.
+
+Apache Configuration
+~~~~~~~~~~~~~~~~~~~~
+
+Include this configuration on the Apache config for the virtual host of your Keystone service, using the client id and secret obtained above:
+
+::
+
+    OIDCResponseType "code"
+    OIDCClaimPrefix "OIDC-"
+    OIDCClaimDelimiter ;
+    OIDCScope "openid"
+    OIDCProviderMetadataURL https://aai-dev.egi.eu/oidc/.well-known/openid-configuration
+    OIDCClientID <client id>
+    OIDCClientSecret <client secret>
+    OIDCCryptoPassphrase <some crypto pass phrase>
+    OIDCRedirectURI https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/oidc/redirect
+
+    # OAuth for CLI access
+    OIDCOAuthIntrospectionEndpoint  https://aai-dev.egi.eu/oidc/introspect
+    OIDCOAuthClientID <client id>
+    OIDCOAuthClientSecret <client secret>
+
+    <Location ~ "/v3/auth/OS-FEDERATION/websso/oidc">
+            AuthType  openid-connect
+            Require   valid-user
+    </Location>
+
+    <Location ~ "/v3/OS-FEDERATION/identity_providers/egi.eu/protocols/oidc/auth">
+            Authtype oauth20
+            Require   valid-user
+    </Location>
+
+Be sure to enable the mod_auth_oidc module in Apache, in Ubuntu:
+
+::
+
+    sudo a2enmod auth_openidc
+
+Keystone Configuration
+~~~~~~~~~~~~~~~~~~~~~~
+
+Configure your ``keystone.conf`` to include in the ``[auth]`` section ``oidc`` in the list of authentication methods and the ``keystone.auth.plugins.mapped.Mapped`` class for its implementation:
+
+
+::
+
+    [auth]
+
+    # This may change in your installation, add oidc to the list of the methods you support
+    methods = password, token, oidc
+
+    # OIDC is basically mapped auth method
+    oidc = keystone.auth.plugins.mapped.Mapped
+
+Add a ``[oidc]`` section as follows:
+
+::
+
+    [oidc]
+    # this is the attribute in the Keystone environment that will define the identity provider
+    remote_id_attribute = HTTP_OIDC_ISS
+
+Add your horizon host as trusted dashboard to the ``[federation]`` section:
+
+::
+
+    [federation]
+    trusted_dashboard = https://<your horizon>/dashboard/auth/websso/
+
+Finally copy the default template for managing the tokens in horizon to ``/etc/keystone/sso_callback_template.html``. This template can be found in keystone git repo at ``https://github.com/openstack/keystone/blob/master/etc/sso_callback_template.html``
+
+::
+
+    curl -L https://raw.githubusercontent.com/openstack/keystone/master/etc/sso_callback_template.html \
+        > /etc/keystone/sso_callback_template.html
+
+Now restart your Apache (and Keystone if running in uwsgi) so you can configure the Keystone Federation support.
+
+Keystone Federation Support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+First, create a new  ``egi.eu`` identity provider with remote id ``https://aai-dev.egi.eu/oidc/``:
+
+::
+
+    $ openstack identity provider create --remote-id https://aai-dev.egi.eu/oidc/ egi.eu
+    +-------------+----------------------------------+
+    | Field       | Value                            |
+    +-------------+----------------------------------+
+    | description | None                             |
+    | domain_id   | 1cac7817dafb4740a249cc9ca6b14ea5 |
+    | enabled     | True                             |
+    | id          | egi.eu                           |
+    | remote_ids  | https://aai-dev.egi.eu/oidc/     |
+    +-------------+----------------------------------+
+
+Create a group for users coming from EGI CheckIn, usual configuration is to have one group per VO you want to support.
+
+::
+
+    $ openstack group create ops
+    +-------------+----------------------------------+
+    | Field       | Value                            |
+    +-------------+----------------------------------+
+    | description |                                  |
+    | domain_id   | default                          |
+    | id          | 89cf5b6708354094942d9d16f0f29f8f |
+    | name        | ops                              |
+    +-------------+----------------------------------+
+
+Add that group to the desired local project:
+
+::
+
+    $ openstack role add member --group ops --project ops
+
+Define a mapping of users from EGI CheckIn to the group just created and restrict with the ``OIDC-edu_person_entitlements`` the VOs you want to support for that group. Substitute the group id and the allowed entitlements for the adequate values for your deployment:
+
+::
+
+    $ cat mapping.egi.json
+    [
+        {
+            "local": [
+                {
+                    "user": {
+                "name": "{0}"
+            },
+                    "group": {
+                        "id": "89cf5b6708354094942d9d16f0f29f8f"
+                    }
+                }
+            ],
+            "remote": [
+                {
+                    "type": "HTTP_OIDC_SUB"
+                },
+                {
+                    "type": "HTTP_OIDC_ISS",
+                    "any_one_of": [
+                        "https://aai-dev.egi.eu/oidc/"
+                    ]
+                },
+                {
+                    "type": "OIDC-edu_person_entitlements",
+                    "regex": true,
+                    "any_one_of": [
+                        "^urn:mace:egi.eu:.*:vm_operator@ops$"
+                    ]
+                }
+            ]
+        }
+    ]
+
+More recent versions of Keystone allow for more elaborated mapping, but this configuration should work for Mitaka and onwards
+
+Create the mapping in Keystone:
+
+::
+
+    $ openstack mapping create --rules mapping.egi.json egi-mapping
+    +-------+----------------------------------------------------------------------------------------------------------------------------------+
+    | Field | Value                                                                                                                            |
+    +-------+----------------------------------------------------------------------------------------------------------------------------------+
+    | id    | egi-mapping                                                                                                                      |
+    | rules | [{u'remote': [{u'type': u'HTTP_OIDC_SUB'}, {u'type': u'HTTP_OIDC_ISS', u'any_one_of': [u'https://aai-dev.egi.eu/oidc/']},        |
+    |       | {u'regex': True, u'type': u'OIDC-edu_person_entitlements', u'any_one_of': [u'^urn:mace:egi.eu:.*:ops:vm_operator@egi.eu$']}],    |
+    |       | u'local': [{u'group': {u'id': u'89cf5b6708354094942d9d16f0f29f8f'}, u'user': {u'name': u'{0}'}}]}]                               |
+    +-------+----------------------------------------------------------------------------------------------------------------------------------+
+
+Finally, create the federated protocol with the identity provider and mapping created before:
+
+::
+
+    $ openstack federation protocol create --identity-provider egi.eu --mapping egi-mapping oidc
+    +-------------------+-------------+
+    | Field             | Value       |
+    +-------------------+-------------+
+    | id                | oidc        |
+    | identity_provider | egi.eu      |
+    | mapping           | egi-mapping |
+    +-------------------+-------------+
+
+Keystone is now ready to accept EGI CheckIn credentials.
+
+Horizon Configuration
+~~~~~~~~~~~~~~~~~~~~~
+
+
+Edit your local_settings.py to include the following values:
+
+::
+
+    # Enables keystone web single-sign-on if set to True.
+    WEBSSO_ENABLED = True
+
+    # Allow users to choose between local Keystone credentials or login
+    # with EGI CheckIn
+    WEBSSO_CHOICES = (
+        ("credentials", _("Keystone Credentials")),
+        ("oidc", _("EGI CheckIn")),
+    )
+
+Once horizon is restarted you will be able to choose "EGI CheckIn" for login.
+
+CLI Access
+~~~~~~~~~~
+
+
+The `OpenStack Client <https://docs.openstack.org/developer/python-openstackclient/>`_ has built-in support for using OpenID Connect Access Tokens to authenticate. You first need to get a valid token from EGI CheckIn (e.g. from https://aai-dev.egi.eu/fedcloud/) and then use it in a command like:
+
+::
+
+    $ openstack --os-auth-url https://<your keystone endpoint>/v3 \
+                --os-auth-type v3oidcaccesstoken --os-protocol oidc \
+                --os-identity-provider egi.eu \
+                --os-access-token <your access token> \
+                token issue
+    +---------+---------------------------------------------------------------------------------------+
+    | Field   | Value                                                                                 |
+    +---------+---------------------------------------------------------------------------------------+
+    | expires | 2017-05-23T11:24:31+0000                                                              |
+    | id      | gAAAAABZJA3fbKX....nEMAPi-IsFOCkU9QWGTISYElzYJsI3z0SJGs7QsTJv4aJQq0JDJUBz6uE85SqXDj3  |
+    | user_id | 020864ea9415413f9d706f6b473dbeba                                                      |
+    +---------+---------------------------------------------------------------------------------------+
+
+Additional VOs
+~~~~~~~~~~~~~~
+
+Configuration can include as many mappings as needed in the json file. Users will be members of all the groups matching the remote part of the mapping. For example this file has 2 mappings, one for members of ``ops`` and another for members of ``fedcloud.egi.eu``:
+
+::
+
+    [
+        {
+            "local": [
+                {
+                    "user": {
+                "name": "{0}"
+            },
+                    "group": {
+                        "id": "66df3a7a0c6248cba8b729de7b042639"
+                    }
+                }
+            ],
+            "remote": [
+                {
+                    "type": "HTTP_OIDC_SUB"
+                },
+                {
+                    "type": "HTTP_OIDC_ISS",
+                    "any_one_of": [
+                        "https://aai-dev.egi.eu/oidc/"
+                    ]
+                },
+                {
+                    "type": "OIDC-edu_person_entitlements",
+                    "regex": true,
+                    "any_one_of": [
+                        "^urn:mace:egi.eu:.*:vm_operator@ops$"
+
+                    ]
+                }
+            ]
+        },
+        {
+            "local": [
+                {
+                    "user": {
+                "name": "{0}"
+            },
+                    "group": {
+                        "id": "e1c04284718f4e19bb0516e5534a24e8"
+                    }
+                }
+            ],
+            "remote": [
+                {
+                    "type": "HTTP_OIDC_SUB"
+                },
+                {
+                    "type": "HTTP_OIDC_ISS",
+                    "any_one_of": [
+                        "https://aai-dev.egi.eu/oidc/"
+                    ]
+                },
+                {
+                    "type": "OIDC-edu_person_entitlements",
+                    "regex": true,
+                    "any_one_of": [
+                        "^urn:mace:egi.eu:.*:vm_operator@fedcloud.egi.eu$"
+                    ]
+                }
+            ]
+        }
+    ]
+
+Moving to EGI CheckIn production instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TBC**
+
+.. Register your Service Provider with the production instance of EGI CheckIn to allow members of the EGI User Community to access your service. This requires that your service meets all the [[AAI_guide_for_SPs#Services eligible for integration|eligibility criteria]] and that integration has been thoroughly tested during Step 1.
 
 
 VOMS Support
 ''''''''''''
 
-Support for authenticating users with X.509 certificates with VOMS extensions is achieved with Keystone-VOMS extension. Documentation is available at https://keystone-voms.readthedocs.io/en/stable-ocata/
+**VOMS Support using Keystone-VOMS is no longer supported from OpenStack Queens onwards**
+
+Support for authenticating users with X.509 certificates with VOMS extensions is achieved with Keystone-VOMS extension. Documentation is available at https://keystone-voms.readthedocs.io/
 
 Notes:
 
