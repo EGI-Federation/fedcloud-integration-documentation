@@ -33,18 +33,41 @@ The integration is performed by a set of EGI components that interact with the O
 
 .. image:: /_static/OpenStackSite.png
 
+* Authentication of EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to  allow users with a valid VOMS proxy to obtain tokens to access your OpenStack deployment.
+
 * **cASO** collects accounting data from OpenStack and uses **SSM** to send the records to the central accounting database on the EGI Accounting service (APEL)
 
 * **cloud-info-provider** registers the RC configuration and description through the EGI Information System to facilitate service discovery
 
 * **cloudkeeper** (and **cloudkeeper-os**) synchronises with `EGI AppDB <https://appdb.egi.eu/browse/cloud>`_  so new or updated images can be provided by the RC to user communities (VO).
 
+There are two options to install these components:
+
+* Using the EGI FedCloud Appliance (recommended), which uses docker containers to bundle an OpenStack deployment of the corresponding services
+
+* Using individual components.
+
+The EGI FedCloud Appliance is available at `AppDB <https://appdb.egi.eu/store/vappliance/fedcloud.integration.appliance.openstack>`_ as an OVA file. You can easily extract the VMDK disk by untaring and optionally converting it to your preferred format with qemu-img:
+
+::
+
+    # get image and extract VMDK
+    curl https://cephrgw01.ifca.es:8080/swift/v1/egi_endorsed_vas/FedCloud-Appliance.Ubuntu.16.04-2017.08.09.ova | \
+           tar x FedCloud-Appliance.Ubuntu.16.04-2017.08.09-disk001.vmdk
+    # convert to qcow2
+    qemu-img convert -O qcow2 FedCloud-Appliance.Ubuntu.16.04-2017.08.09-disk001.vmdk fedcloud-appliance.qcow2
+
+The appliance running at your OpenStack must:
+
+* Be accessible via public IP with port 2170 open for external connections.
+
+* Have a host certificate to send the accounting information to the accounting repository. DN of the host certificate must be registered in GOCDB service type eu.egi.cloud.accounting. The host certificate and key in PEM format are expected in /etc/grid-security/hostcert.pem and /etc/grid-security/hostkey.pem respectively.
+
+* Have enough disk space for handling the VM image replication (~ 100GB for `fedcloud.egi.eu` VO). By default these are stored at /image_data. You can mount a volume at that location.
+
 Not all EGI components need to share the same credentials. They are individually configured, you can use different credentials and permissions if desired.
 
-Authentication by EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to  allow users with a valid VOMS proxy to obtain tokens to access your OpenStack deployment.
-
 Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API and OCCI.
-
 
 .. TODO
    PORTS?
@@ -438,6 +461,153 @@ Notes:
 
 * if (and only if) you need to configure the Per-User Subproxy (PUSP) feature, please follow the `specific guide <https://wiki.egi.eu/wiki/Long-tail_of_science_-_information_for_providers#Instructions_for_OpenStack_providers>`_.
 
+EGI Accounting
+::::::::::::::
+
+There are two different processes handling the accounting integration:
+
+* cASO, which connects to the OpenStack deployment to get the usage information, and,
+
+* ssmsend, which sends that usage information to the central EGI accounting repository.
+
+They should be run by cron periodically, settings below run cASO every hour and ssmsend every six hours.
+
+Using the VM Appliance
+''''''''''''''''''''''
+
+`cASO configuration <http://caso.readthedocs.org/en/latest/configuration.html>`_ is stored at  ``/etc/caso/caso.conf``. Most default values should be ok, but you must set:
+
+* ``site_name`` (line 12)
+
+* ``projects`` (line 20)
+
+* credentials to access the accounting data (lines 28-47, more options also available). Check the `cASO documentation <http://caso.readthedocs.org/en/latest/configuration.html#openstack-configuration>`_ for the expected permissions of the user configured here.
+
+The cron job will use the voms mapping file at ``/etc/voms.json``.
+
+cASO will write records to ``/var/spool/apel`` from where ssmsend will take them.
+
+SSM configuration is available at ``/etc/apel``. Defaults should be ok for most cases. The cron file uses ``/etc/grid-security`` for the CAs and the host certificate and private keys (``/etc/grid-security/hostcert.pem`` and ``/etc/grid-security/hostkey.pem``).
+
+Running the services
+~~~~~~~~~~~~~~~~~~~~
+
+Both caso and ssmsend are run via cron scripts. They are located at ``/etc/cron.d/caso`` and ``/etc/crond.d/ssmsend`` respectively. For convenience there are also two scripts ``/usr/loca/bin/caso-extract.sh`` and ``/usr/local/bin/ssm-send.sh`` that run the docker container with the proper volumes.
+
+Using individual components
+'''''''''''''''''''''''''''
+
+Documentation on how to install and configure cASO is available at https://caso.readthedocs.org/en/latest/
+
+In order to send the records to the accounting database, you will also need to configure **SSM**, whose documentation can be found at https://github.com/apel/ssm
+
+EGI Information System
+::::::::::::::::::::::
+
+Information discovery provides a real-time view about the actual images and flavors available at the OpenStack for the federation users. It has two components:
+
+* Resource-Level BDII: which queries the OpenStack deployment to get the information to publish
+
+* Site-Level BDII: gathers information from several resource-level BDIIs and makes it publicly available for the EGI information system.
+
+Using the VM Appliance
+''''''''''''''''''''''
+
+Resource-level BDII
+~~~~~~~~~~~~~~~~~~~
+
+This is provided by container ``egifedcloud/cloudbdii``. You need to configure:
+
+* ``/etc/cloud-info-provider/openstack.rc``, with the credentials to query your OpenStack. The user configured just needs to be able to access the lists of images and flavors.
+
+* ``/etc/cloud-info-provider/openstack.yaml``, this file includes the static information of your deployment. Make sure to set the ``SITE-NAME`` as defined in GOCDB.
+
+Site-level BDII
+~~~~~~~~~~~~~~~
+
+The ``egifedcloud/sitebdii`` container runs this process. Configuration files:
+
+* `/etc/sitebdii/glite-info-site-defaults.conf`. Set here the name of your site (as defined in GOCDB) and the public hostname where the appliance will be available.
+
+* `/etc/sitebdii/site.cfg`. Include here basic information on your site.
+
+Running the services
+~~~~~~~~~~~~~~~~~~~~
+
+There is a `bdii.service` unit for systemd available in the appliance. This leverages docker-compose for running the containers. You can start the service with:
+
+::
+
+    systemctl start bdii
+
+Check the status with:
+
+::
+
+    systemctl status bdii
+
+And stop with:
+
+::
+
+    systemctl stop bdii
+
+You should be able to get the BDII information with an LDAP client, e.g.:
+
+::
+
+    ldapsearch -x -p 2170 -h <yourVM.hostname.domain.com> -b o=glue
+
+Using individual components
+'''''''''''''''''''''''''''
+
+The BDII can be installed easily directly from the distribution repository, the package is usually named "bdii".
+
+There is a common cloud information provider for all cloud management frameworks that collects the information from the used CMF and send them to the aforementioned BDII. It can be installed on the same machine as the BDII or on another machine. The installation and configuration guide for the cloud information provider can be found in the following `Fedclouds BDII instructions <https://wiki.egi.eu/wiki/HOWTO15>`_.
+
+*Note that you should have a Site-level and resource-level BDII, these are normally run on different hosts*
+
+EGI VM Image Management
+:::::::::::::::::::::::
+
+VM Images are replicated using `cloudkeeper`, which has two components:
+
+* fronted (cloudkeeper-core) dealing the with image lists and downloading the needed images, run periodically with cron
+
+* backend (cloudkeeper-os) dealing with your glance catalogue, running permanently.
+
+
+Using the VM Appliance
+''''''''''''''''''''''
+
+Every 4 hours, the appliance will perform the following actions:
+
+* download the configured lists in ``/etc/cloudkeeper/image-lists.conf`` and verify its signature
+
+* check any changes in the lists and download new images
+
+* synchronise this information to the configured glance endpoint
+
+First you need to configure and start the backend. Edit ``/etc/cloudkeeper/cloudkeeper-os.conf`` and add the authentication parameters from line 117 to 136.
+
+Then add as many image lists (one per line) as you would like to subscribe to ``/etc/cloudkeeper/image-lists.conf``. Use URLs with your AppDB token for authentication.
+
+Running the services
+~~~~~~~~~~~~~~~~~~~~
+
+cloudkeeper-os should run permanently, there is a ``cloudkeeper-os.service`` for systemd in the appliance. Manage as usual:
+
+::
+
+    systemctl <start|stop|status> cloudkeeper-os
+
+cloudkeeper core is run every 4 hours with a cron script.
+
+Using individual components
+'''''''''''''''''''''''''''
+
+.. TODO: Where are the docs?
+
 EGI VM Management (optional)
 ::::::::::::::::::::::::::::
 
@@ -471,179 +641,6 @@ Once the OCCI interface is installed, you should register it on your installatio
     |     type    |               occi               |
     +-------------+----------------------------------+
 
-
-Other components
-::::::::::::::::
-
-There are two options to install the remaining Accounting, Information System and Image Management components:
-
-* Using the EGI FedCloud Appliance (recommended), which uses docker containers to bundle an OpenStack deployment of the corresponding services
-
-* Using individual components.
-
-Follow the guides below according to your preferences
-
-FedCloud Appliance
-''''''''''''''''''
-
-The EGI FedCloud Appliance is available at `AppDB <https://appdb.egi.eu/store/vappliance/fedcloud.integration.appliance.openstack>`_ as an OVA file. You can easily extract the VMDK disk by untaring and optionally converting it to your preferred format with qemu-img:
-
-::
-
-    # get image and extract VMDK
-    curl https://cephrgw01.ifca.es:8080/swift/v1/egi_endorsed_vas/FedCloud-Appliance.Ubuntu.16.04-2017.08.09.ova | \
-           tar x FedCloud-Appliance.Ubuntu.16.04-2017.08.09-disk001.vmdk
-    # convert to qcow2
-    qemu-img convert -O qcow2 FedCloud-Appliance.Ubuntu.16.04-2017.08.09-disk001.vmdk fedcloud-appliance.qcow2
-
-The VM running at your OpenStack must:
-
-* Be accessible via public IP with port 2170 open for external connections.
-
-* Have a host certificate to send the accounting information to the accounting repository. DN of the host certificate must be registered in GOCDB service type eu.egi.cloud.accounting. The host certificate and key in PEM format are expected in /etc/grid-security/hostcert.pem and /etc/grid-security/hostkey.pem respectively.
-
-* Have enough disk space for handling the VM image replication (~ 100GB for `fedcloud.egi.eu` VO). By default these are stored at /image_data. You can mount a volume at that location.
-
-EGI Accounting
-~~~~~~~~~~~~~~
-
-There are two different processes handling the accounting integration:
-
-* cASO, which connects to the OpenStack deployment to get the usage information, and,
-
-* ssmsend, which sends that usage information to the central EGI accounting repository.
-
-They are run by cron every hour (cASO) and every six hours (ssmsend).
-
-`cASO configuration <http://caso.readthedocs.org/en/latest/configuration.html>`_ is stored at  ``/etc/caso/caso.conf``. Most default values are ok, but you must set:
-
-* ``site_name`` (line 12)
-
-* ``projects`` (line 20)
-
-* credentials to access the accounting data (lines 28-47, more options also available). Check the `cASO documentation <http://caso.readthedocs.org/en/latest/configuration.html#openstack-configuration>`_ for the expected permissions of the user configured here.
-
-The cron job will use the voms mapping file at ``/etc/voms.json``.
-
-cASO will write records to ``/var/spool/apel`` from where ssmsend will take them.
-
-SSM configuration is available at ``/etc/apel``. Defaults should be ok for most cases. The cron file uses ``/etc/grid-security`` for the CAs and the host certificate and private keys (``/etc/grid-security/hostcert.pem`` and ``/etc/grid-security/hostkey.pem``).
-
-Running the services
-""""""""""""""""""""
-
-Both caso and ssmsend are run via cron scripts. They are located at ``/etc/cron.d/caso`` and ``/etc/crond.d/ssmsend`` respectively. For convenience there are also two scripts ``/usr/loca/bin/caso-extract.sh`` and ``/usr/local/bin/ssm-send.sh`` that run the docker container with the proper volumes.
-
-EGI Information System
-~~~~~~~~~~~~~~~~~~~~~~
-
-Information discovery provides a real-time view about the actual images and flavors available at the OpenStack for the federation users. It has two components:
-
-* Resource-Level BDII: which queries the OpenStack deployment to get the information to publish
-
-* Site-Level BDII: gathers information from several resource-level BDIIs (in this case only 1) and makes it publicly available for the EGI information system.
-
-Resource-level BDII
-"""""""""""""""""""
-
-This is provided by container ``egifedcloud/cloudbdii``. You need to configure:
-
-* ``/etc/cloud-info-provider/openstack.rc``, with the credentials to query your OpenStack. The user configured just needs to be able to access the lists of images and flavors.
-
-* ``/etc/cloud-info-provider/openstack.yaml``, this file includes the static information of your deployment. Make sure to set the ``SITE-NAME`` as defined in GOCDB.
-
-Site-level BDII
-"""""""""""""""
-
-The ``egifedcloud/sitebdii`` container runs this process. Configuration files:
-
-* `/etc/sitebdii/glite-info-site-defaults.conf`. Set here the name of your site (as defined in GOCDB) and the public hostname where the appliance will be available.
-
-* `/etc/sitebdii/site.cfg`. Include here basic information on your site.
-
-Running the services
-""""""""""""""""""""
-
-There is a `bdii.service` unit for systemd available in the appliance. This leverages docker-compose for running the containers. You can start the service with:
-
-::
-
-    systemctl start bdii
-
-Check the status with:
-
-::
-
-    systemctl status bdii
-
-And stop with:
-
-::
-
-    systemctl stop bdii
-
-You should be able to get the BDII information with an LDAP client, e.g.:
-
-::
-
-    ldapsearch -x -p 2170 -h <yourVM.hostname.domain.com> -b o=glue
-
-EGI VM Image Management
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The appliance provides VMI replication with cloudkeeper. Every 4 hours, the appliance will perform the following actions:
-
-* download the configured lists in ``/etc/cloudkeeper/image-lists.conf`` and verify its signature
-
-* check any changes in the lists and download new images
-
-* synchronise this information to the configured glance endpoint
-
-cloudkeeper has two components:
-
-* fronted dealing the with image lists and downloading the needed images
-
-* backend dealing with your glance catalogue
-
-First you need to configure and start the backend. Edit ``/etc/cloudkeeper/cloudkeeper-os.conf`` and add the authentication parameters from line 117 to 136.
-Then add as many image lists (one per line) as you would like to subscribe to ``/etc/cloudkeeper/image-lists.conf``. Use URLs with your AppDB token for authentication.
-
-Running the services
-""""""""""""""""""""
-
-cloudkeeper-os should run permanently, there is a ``cloudkeeper-os.service`` for systemd in the appliance. Manage as usual:
-
-::
-
-    systemctl <start|stop|status> cloudkeeper-os
-
-cloudkeeper core is run every 4 hours with a cron script.
-
-Individual Components
-'''''''''''''''''''''
-
-EGI Accounting
-~~~~~~~~~~~~~~
-
-
-Every cloud RC should publish utilization data to the EGI accounting database. You will need to install **cASO**, a pluggable extractor of Cloud Accounting Usage Records from OpenStack.
-
-Documentation on how to install and configure cASO is available at https://caso.readthedocs.org/en/latest/
-
-In order to send the records to the accounting database, you will also need to configure **SSM**, whose documentation can be found at https://github.com/apel/ssm
-
-
-EGI Information System
-~~~~~~~~~~~~~~~~~~~~~~
-
-Sites must publish information to EGI information system which is based on BDII. The BDII can be installed easily directly from the distribution repository, the package is usually named "bdii".
-
-There is a common cloud information provider for all cloud management frameworks that collects the information from the used CMF and send them to the aforementioned BDII. It can be installed on the same machine as the BDII or on another machine. The installation and configuration guide for the cloud information provider can be found in the following `Fedclouds BDII instructions <https://wiki.egi.eu/wiki/HOWTO15>`_.
-
-EGI VM Image Management
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. TODO: Where are the docs?
 
 Post-installation
 :::::::::::::::::
