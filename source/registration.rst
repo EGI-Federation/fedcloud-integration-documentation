@@ -9,24 +9,38 @@ These are the expected services for a working site:
 
 * **eu.egi.cloud.accounting**. Register here the host sending the records to the accounting repository (executing SSM send).
 
-* **eu.egi.cloud.vm-metadata.vmcatcher** for the VMI replication mechanism. Register here the host providing the replication.
+* **eu.egi.cloud.vm-metadata.vmcatcher** for the VMI replication mechanism. Register here the host providing the replication (i.e. the host with cloudkeeper installation)
 
 If offering OCCI interface, sites should register:
 
-* **eu.egi.cloud.vm-management.occi** for the OCCI endpoint offered by the site. Please note the special endpoint URL syntax described at `GOCDB usage in FedCloud <https://wiki.egi.eu/wiki/Federated_Cloud_Technology#eu.egi.cloud.vm-management.occi>`_
+* **eu.egi.cloud.vm-management.occi** for the OCCI endpoint offered by the site. The endpoint URL must follow this syntax:
 
-If offering native OpenStack access, register:
+    ::
 
-* **org.openstack.nova** for the Nova endpoint of the site.  Please note the special endpoint URL syntax described at [[Federated_Cloud_Technology#org.openstack.nova|GOCDB usage in FedCloud]]
+        https://hostname:port/?image=<image_name>&resource=<resource_name>
 
-* **TODO** (swift)
+    where ``<image_name>`` and ``<resource_name>`` cannot contain spaces. These attributes map to os_tpl and resource_tpl respectively and will be the ones used for monitoring purposes.
+
+If offering native OpenStack access (nova), register:
+
+* **org.openstack.nova** for the Nova endpoint of the site.  The endpoint URL must contain the Keystone URL with the following additional info:
+
+    ::
+
+        https://hostname:port/url?image=<image_uuid>&resource=<flavor_name>
+
+    where ``<image_id>`` and ``<flavour_name>`` cannot contain spaces and are the image and flavour used for monitoring
+
+If offering native OpenStack access (swift), register:
+
+* **org.openstack.swift** for the swift endpoint of the site. The endpoint URL field must contain Keystone URL:
+
+    ::
+
+        https://hostname:port/url
 
 .. TODO: CLARIFY IF THIS IS TRUE, not bringing any value atm
-
-Site should also declare the following properties using the *Site Extension Properties* feature:
-
-  #. Max number of virtual cores for VM with parameter name: ``cloud_max_cores4VM``
-
-  #. Max amount of RAM for VM with parameter name: ``cloud_max_RAM4VM`` using the format: value+unit, e.g. "16GB".
-
-  #. Max amount of storage that could be mounted in a VM with parameter name: ``cloud_max_storage4VM`` using the format: value+unit, e.g. "16GB".
+    Site should also declare the following properties using the *Site Extension Properties* feature:
+      #. Max number of virtual cores for VM with parameter name: ``cloud_max_cores4VM``
+      #. Max amount of RAM for VM with parameter name: ``cloud_max_RAM4VM`` using the format: value+unit, e.g. "16GB".
+      #. Max amount of storage that could be mounted in a VM with parameter name: ``cloud_max_storage4VM`` using the format: value+unit, e.g. "16GB".
