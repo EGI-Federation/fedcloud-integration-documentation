@@ -1,7 +1,19 @@
 OpenStack
 `````````
 
-Integration with FedCloud requires a *working OpenStack installation* as a pre-requirement (see http://docs.openstack.org/ for details). This manual provides information on how to set up a Resource Centre providing cloud resources in the EGI infrastructure, using **OpenStack Ocata**. EGI expect the following OpenStack services to be available and accessible from outside the site:
+This manual provides information on how to set up a Resource Centre providing cloud resources in the EGI infrastructure. Integration with FedCloud requires a *working OpenStack installation* as a pre-requirement (see http://docs.openstack.org/ for details). Support for OpenStack is provided for the following versions:
+
+* OpenStack Mitaka -- LTS under Ubuntu 16.04 (otherwise EOL)
+
+* OpenStack Ocata
+
+* OpenStack Pike
+
+* OpenStack Queens (note that support for Keystone-VOMS is not available, only necessary for legacy VOs)
+
+Support for other versions is not guaranteed and they are not recommended in production as they are EOL'd.  See http://releases.openstack.org/ for more details on the OpenStack releases.
+
+EGI expects the following OpenStack services to be available and accessible from outside your site:
 
 * Keystone
 
@@ -29,7 +41,7 @@ The integration is performed by a set of EGI components that interact with the O
 
 Not all EGI components need to share the same credentials. They are individually configured, you can use different credentials and permissions if desired.
 
-Authentication by EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to  allow users with a valid VOMS proxy to obtain tokes to access your OpenStack deployment.
+Authentication by EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to  allow users with a valid VOMS proxy to obtain tokens to access your OpenStack deployment.
 
 Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API and OCCI.
 
@@ -44,27 +56,27 @@ EGI AAI
 OpenID Connect Support
 ''''''''''''''''''''''
 
-The integration of OpenStack service providers into the EGI CheckIn is a two-step process:
+The integration of OpenStack service providers into the EGI Check-in is a two-step process:
 
-#. Test integration with the development instance of EGI CheckIn. This will allow you to check complete the complete functionality of the system without affecting  the production CheckIn service.
+#. Test integration with the development instance of EGI Check-in. This will allow you to check complete the complete functionality of the system without affecting  the production Check-in service.
 
-#. Once the integration is working correctly, register your provider with the production instance of EGI CheckIn to allow members of the EGI User Community to access your service.
+#. Once the integration is working correctly, register your provider with the production instance of EGI Check-in to allow members of the EGI User Community to access your service.
 
-Registration into CheckIn development instance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Registration into Check-in development instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Before your service can use the EGI CheckIn OIDC Provider for user login, you must set up a client at https://aai-dev.egi.eu/oidc/manage/#admin/clients in order to obtain OAuth 2.0 credentials and register one or more redirect URIs.
+Before your service can use the EGI Check-in OIDC Provider for user login, you must set up a client at https://aai-dev.egi.eu/oidc/manage/#admin/clients in order to obtain OAuth 2.0 credentials and register one or more redirect URIs.
 
 Make sure that you fill in the following options:
 
-* Main tab:
+* *Main* tab:
 
     * Set redirect URL to ``https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/oidc/redirect``. Recent versions of OpenStack may deploy Keystone at ``/identity/``, be sure to include that in the ``<your keystone endpoint>`` part of the URL if needed.
 
-* Access tab:
+* *Access* tab:
 
-    * Enable '''authorization code''' in the grant type
-    * Enable '''Introspection Allow calls to the Introspection Endpoint?'''
+    * Enable *authorization code* in the **Grant Types** field
+    * Enable *Allow calls to the Introspection Endpoint?* in **Introspection** field
 
 Once done, you will get a client id and client secret. Save them for the following steps
 
@@ -78,7 +90,7 @@ Pre-requisites
 
 #. Keystone must be run with SSL
 
-#. You need to install [https://github.com/pingidentity/mod_auth_openidc mod_auth_openidc] for adding support for OpenID Connect to Apache.
+#. You need to install `mod_auth_openidc <https://github.com/pingidentity/mod_auth_openidc>`_ for adding support for OpenID Connect to Apache.
 
 Apache Configuration
 ~~~~~~~~~~~~~~~~~~~~
@@ -176,7 +188,7 @@ First, create a new  ``egi.eu`` identity provider with remote id ``https://aai-d
     | remote_ids  | https://aai-dev.egi.eu/oidc/     |
     +-------------+----------------------------------+
 
-Create a group for users coming from EGI CheckIn, usual configuration is to have one group per VO you want to support.
+Create a group for users coming from EGI Check-in, usual configuration is to have one group per VO you want to support.
 
 ::
 
@@ -196,7 +208,7 @@ Add that group to the desired local project:
 
     $ openstack role add member --group ops --project ops
 
-Define a mapping of users from EGI CheckIn to the group just created and restrict with the ``OIDC-edu_person_entitlements`` the VOs you want to support for that group. Substitute the group id and the allowed entitlements for the adequate values for your deployment:
+Define a mapping of users from EGI Check-in to the group just created and restrict with the ``OIDC-edu_person_entitlements`` the VOs you want to support for that group. Substitute the group id and the allowed entitlements for the adequate values for your deployment:
 
 ::
 
@@ -263,7 +275,7 @@ Finally, create the federated protocol with the identity provider and mapping cr
     | mapping           | egi-mapping |
     +-------------------+-------------+
 
-Keystone is now ready to accept EGI CheckIn credentials.
+Keystone is now ready to accept EGI Check-in credentials.
 
 Horizon Configuration
 ~~~~~~~~~~~~~~~~~~~~~
@@ -277,19 +289,19 @@ Edit your local_settings.py to include the following values:
     WEBSSO_ENABLED = True
 
     # Allow users to choose between local Keystone credentials or login
-    # with EGI CheckIn
+    # with EGI Check-in
     WEBSSO_CHOICES = (
         ("credentials", _("Keystone Credentials")),
-        ("oidc", _("EGI CheckIn")),
+        ("oidc", _("EGI Check-in")),
     )
 
-Once horizon is restarted you will be able to choose "EGI CheckIn" for login.
+Once horizon is restarted you will be able to choose "EGI Check-in" for login.
 
 CLI Access
 ~~~~~~~~~~
 
 
-The `OpenStack Client <https://docs.openstack.org/developer/python-openstackclient/>`_ has built-in support for using OpenID Connect Access Tokens to authenticate. You first need to get a valid token from EGI CheckIn (e.g. from https://aai-dev.egi.eu/fedcloud/) and then use it in a command like:
+The `OpenStack Client <https://docs.openstack.org/developer/python-openstackclient/>`_ has built-in support for using OpenID Connect Access Tokens to authenticate. You first need to get a valid token from EGI Check-in (e.g. from https://aai-dev.egi.eu/fedcloud/) and then use it in a command like:
 
 ::
 
@@ -377,12 +389,25 @@ Configuration can include as many mappings as needed in the json file. Users wil
         }
     ]
 
-Moving to EGI CheckIn production instance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Moving to EGI Check-in production instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TBC**
+Once tests in the development instance of Check-in are successful, you can move to the production instance. You should open a `GGUS ticket <https://ggus.eu>`_ for the request. Besides you will need to update your configuration as follows:
 
-.. Register your Service Provider with the production instance of EGI CheckIn to allow members of the EGI User Community to access your service. This requires that your service meets all the [[AAI_guide_for_SPs#Services eligible for integration|eligibility criteria]] and that integration has been thoroughly tested during Step 1.
+* Update the ``remote-id`` of the identity provider:
+
+::
+
+    $ openstack identity provider set --remote-id https://aai.egi.eu/oidc/ egi.eu
+
+* Update the ``HTTP_OIDC_ISS`` filter in your mappings, e.g.:
+
+::
+
+    $ sed -i 's/aai-dev.egi.eu/aai.egi.eu/' mapping.egi.json
+    $ openstack mapping set --rules mapping.egi.json egi-mapping
+
+* Update your client secret and client ID in the Apache configuration
 
 
 VOMS Support
