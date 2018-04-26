@@ -41,11 +41,18 @@ The integration is performed by a set of EGI components that interact with the O
 
 * **cloudkeeper** (and **cloudkeeper-os**) synchronises with `EGI AppDB <https://appdb.egi.eu/browse/cloud>`_  so new or updated images can be provided by the RC to user communities (VO).
 
+Not all EGI components need to share the same credentials. They are individually configured, you can use different credentials and permissions if desired.
+
+Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API and OCCI.
+
 There are two options to install these components:
 
 * Using the EGI FedCloud Appliance (recommended), which uses docker containers to bundle an OpenStack deployment of the corresponding services
 
 * Using individual components.
+
+FedCloud Appliance
+::::::::::::::::::
 
 The EGI FedCloud Appliance is available at `AppDB <https://appdb.egi.eu/store/vappliance/fedcloud.integration.appliance.openstack>`_ as an OVA file. You can easily extract the VMDK disk by untaring and optionally converting it to your preferred format with qemu-img:
 
@@ -65,9 +72,10 @@ The appliance running at your OpenStack must:
 
 * Have enough disk space for handling the VM image replication (~ 100GB for `fedcloud.egi.eu` VO). By default these are stored at /image_data. You can mount a volume at that location.
 
-Not all EGI components need to share the same credentials. They are individually configured, you can use different credentials and permissions if desired.
+Individual Components
+:::::::::::::::::::::
 
-Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API and OCCI.
+You can use the CMD repository to install packages for your distribution. Follow `the instructions for setuing up the repos <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_.
 
 .. TODO
    PORTS?
