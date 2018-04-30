@@ -45,14 +45,16 @@ Not all EGI components need to share the same credentials. They are individually
 
 Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API and OCCI.
 
-There are two options to install these components:
 
-* Using the EGI FedCloud Appliance (recommended), which uses docker containers to bundle an OpenStack deployment of the corresponding services
+Installation options
+::::::::::::::::::::
 
-* Using individual components.
+.. There are two options to install these components:
+   * Using the EGI FedCloud Appliance (recommended), which uses docker containers to bundle an OpenStack deployment of the corresponding services
+   * Using individual components.
 
 FedCloud Appliance
-::::::::::::::::::
+''''''''''''''''''
 
 The EGI FedCloud Appliance is available at `AppDB <https://appdb.egi.eu/store/vappliance/fedcloud.integration.appliance.openstack>`_ as an OVA file. You can easily extract the VMDK disk by untaring and optionally converting it to your preferred format with qemu-img:
 
@@ -72,14 +74,9 @@ The appliance running at your OpenStack must:
 
 * Have enough disk space for handling the VM image replication (~ 100GB for `fedcloud.egi.eu` VO). By default these are stored at /image_data. You can mount a volume at that location.
 
-Individual Components
-:::::::::::::::::::::
-
-You can use the CMD repository to install packages for your distribution. Follow `the instructions for setuing up the repos <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_.
-
-.. TODO
-   PORTS?
-
+.. Individual Components
+   '''''''''''''''''''''
+   You can use the CMD repository to install packages for your distribution. Follow `the instructions for setuing up the repos <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_.
 
 EGI AAI
 :::::::
@@ -502,12 +499,12 @@ Running the services
 
 Both caso and ssmsend are run via cron scripts. They are located at ``/etc/cron.d/caso`` and ``/etc/crond.d/ssmsend`` respectively. For convenience there are also two scripts ``/usr/loca/bin/caso-extract.sh`` and ``/usr/local/bin/ssm-send.sh`` that run the docker container with the proper volumes.
 
-Using individual components
-'''''''''''''''''''''''''''
+.. Using individual components
+   '''''''''''''''''''''''''''
 
-Documentation on how to install and configure cASO is available at https://caso.readthedocs.org/en/latest/
+.. Documentation on how to install and configure cASO is available at https://caso.readthedocs.org/en/latest/
 
-In order to send the records to the accounting database, you will also need to configure **SSM**, whose documentation can be found at https://github.com/apel/ssm
+.. In order to send the records to the accounting database, you will also need to configure **SSM**, whose documentation can be found at https://github.com/apel/ssm
 
 EGI Information System
 ::::::::::::::::::::::
@@ -566,14 +563,40 @@ You should be able to get the BDII information with an LDAP client, e.g.:
 
     ldapsearch -x -p 2170 -h <yourVM.hostname.domain.com> -b o=glue
 
-Using individual components
-'''''''''''''''''''''''''''
+.. Using individual components
+   '''''''''''''''''''''''''''
 
-The BDII can be installed easily directly from the distribution repository, the package is usually named "bdii".
+.. The BDII can be installed easily directly from the distribution repository, the package is usually named "bdii".
 
-There is a common cloud information provider for all cloud management frameworks that collects the information from the used CMF and send them to the aforementioned BDII. It can be installed on the same machine as the BDII or on another machine. The installation and configuration guide for the cloud information provider can be found in the following `Fedclouds BDII instructions <https://wiki.egi.eu/wiki/HOWTO15>`_.
+.. There is a common cloud information provider for all cloud management frameworks that collects the information from the used CMF and send them to the aforementioned BDII. It can be installed on the same machine as the BDII or on another machine. The installation and configuration guide for the cloud information provider can be found in the following `Fedclouds BDII instructions <https://wiki.egi.eu/wiki/HOWTO15>`_.
 
-*Note that you should have a Site-level and resource-level BDII, these are normally run on different hosts*
+.. *Note that you should have a Site-level and resource-level BDII, these are normally run on different hosts*
+
+.. Resource-level BDII
+   ~~~~~~~~~~~~~~~~~~~
+
+.. Install the cloud-info-provider and bdii packages:
+
+.. ::
+
+..    apt-get install bdii cloud-info-provider
+
+.. Create the configuration file, you can start from the template:
+
+.. ::
+
+..    cp /etc/cloud-info-provider/sample.openstack.yaml /etc/cloud-info-provider/openstack.yaml
+
+
+
+.. Once the resource-level BDII is working, you can add it to your site-BDII by adding a new URL like this:
+
+.. ::
+
+..     ldap://<cloud-info-provier-hostname>:2170/GLUE2GroupID=cloud,o=glue
+
+.. Check how to set up your Site-BDII at `How to publish Site Information <https://wiki.egi.eu/wiki/MAN01_How_to_publish_Site_Information>`_ for information on how to add the URL.
+
 
 EGI VM Image Management
 :::::::::::::::::::::::
@@ -611,8 +634,8 @@ cloudkeeper-os should run permanently, there is a ``cloudkeeper-os.service`` for
 
 cloudkeeper core is run every 4 hours with a cron script.
 
-Using individual components
-'''''''''''''''''''''''''''
+.. Using individual components
+   '''''''''''''''''''''''''''
 
 .. TODO: Where are the docs?
 
