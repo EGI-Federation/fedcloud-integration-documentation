@@ -78,6 +78,48 @@ The appliance running at your OpenStack must:
    '''''''''''''''''''''
    You can use the CMD repository to install packages for your distribution. Follow `the instructions for setuing up the repos <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_.
 
+Open Ports
+::::::::::
+
+The following **services** must be accessible to allow access to an OpenStack-based FedCloud site (default ports listed below, can be adjusted to your installation)
+
++---------------+------------------------+-------------------------------------------------+
+| Port          | Application            | Note                                            |
++===============+========================+=================================================+
+| **5000**/TCP  | **OpenStack**/Keystone | Authentication to your OpenStack.               |
++---------------+------------------------+-------------------------------------------------+
+| **8776**/TCP  | **OpenStack**/cinder   | Block Storage management.                       |
++---------------+------------------------+-------------------------------------------------+
+| **8774**/TCP  | **OpenStack**/nova     | VM management.                                  |
++---------------+------------------------+-------------------------------------------------+
+| **9696**/TCP  | **OpenStack**/neutron  | Network management.                             |
++---------------+------------------------+-------------------------------------------------+
+| **9292**/TCP  | **OpenStack**/glance   | VM Image management.                            |
++---------------+------------------------+-------------------------------------------------+
+| **2170**/TCP  | **BDII**/LDAP          | EGI Service Discovery/Information System.       |
++---------------+------------------------+-------------------------------------------------+
+| **8787**/TCP  | **OpenStack**/ooi      | EGI EGI Virtual Machine Management (optional).  |
++---------------+------------------------+-------------------------------------------------+
+
+Permissions
+:::::::::::
+
+This is an overview of the expected account permissions used in an OpenStack site, these accounts can be merged as neede for your deployment:
+
+
++---------------+------------------------------------------------------------------------------------------------+
+| Component     | Permission                                                                                     |
++===============+================================================================================================+
+| cloud-info    | Member of all projects supporting EGI VOs                                                      |
++---------------+------------------------------------------------------------------------------------------------+
+| accounting    | Member of all projects and able to list users (allowed to ``identity:list_users`` in keystone) |
++---------------+------------------------------------------------------------------------------------------------+
+| cloud-keeper  | Permission to manage the images for all the projects supportin EGI VOs                         |
++---------------+------------------------------------------------------------------------------------------------+
+| Other users   | Automatically created by Keystone and permission set as configured in the mappings             |
++---------------+------------------------------------------------------------------------------------------------+
+
+
 EGI AAI
 :::::::
 
