@@ -36,7 +36,10 @@ The following **components** must be installed:
 
 * **cloud-info-provider** and **BDII**, register site in the EGI Information System.
 
-The following **ports** must be open to allow access to an OpenNebula-based FedCloud sites: 
+Open Ports
+::::::::::
+
+The following **ports** must be open to allow access to an OpenNebula-based FedCloud site:
 
 +---------------+--------------------------+----------------------------------+---------------------------------------------------------------------------------+
 | Port          | Application              | Host                             | Note                                                                            |
@@ -55,6 +58,9 @@ The following **ports** must be open to allow access to an OpenNebula-based FedC
 +---------------+--------------------------+----------------------------------+---------------------------------------------------------------------------------+
 
 There are no additional requirements for **OpenNebula** hosts used to run virtual machines.
+
+Service accounts
+::::::::::::::::
 
 This is an overview of **service accounts** used in an OpenNebula-based site. The names are default and can be changed if required.
 
@@ -191,7 +197,7 @@ Migration from v1 to v2
 '''''''''''''''''''''''
 In order to migrate from rOCCI-server v1 with Perun-managed user accounts, perform the following steps.
 
-Preparation 
+Preparation
 ~~~~~~~~~~~
 
 * Disconnect direct propagation (slave scripts)
@@ -206,7 +212,7 @@ Migration
 ::
 
     Single-group accounts owned by the same person can be identified as having:
-    
+
     * `NAME` following the naming convention $VONAME_$ID where the same user always has the same $ID
     * `TEMPLATE/X509_DN` where the same user always has the same DN
 
@@ -323,7 +329,7 @@ Configuration
 
 * Enable support for EGI VOs via OIDC: *TBD*
 
-Runtime 
+Runtime
 '''''''
 
 * In OpenNebula, create empty groups for *fedcloud.egi.eu*, *ops*, and *dteam* with group attribute:
@@ -335,7 +341,7 @@ Runtime
 EGI Accounting
 ::::::::::::::
 
-Prerequisites 
+Prerequisites
 '''''''''''''
 
 ``oneacct-export`` uses **Secure Stomp Messenger** to send accounting records to the central repository. Please, refer to ``ssm`` documentation for `installation instructions <https://github.com/apel/ssm>`_. By default, accounting records are placed in ``/var/spool/apel/outgoing/00000000``. You **have to** configure and run ``ssmsend`` periodically, this is not handled by oneacct-export.
@@ -345,7 +351,7 @@ Enable EPEL and install the following packages prior to oneacct-export installat
 
     yum install -y epel-release wget
 
-Installation 
+Installation
 ''''''''''''
 
 oneacct-export is distributed as package for multiple Linux distributions which is available in AppDB. This guide will expect CentOS 7 distribution but installation on any other supported distribution is very similar.
@@ -366,7 +372,7 @@ Configuration
 '''''''''''''
 
 * Edit ``/etc/oneacct-export/conf.yml``
-  
+
 ::
 
     apel:
