@@ -70,9 +70,9 @@ The appliance running at your OpenStack must:
 
 * Be accessible via public IP with port 2170 open for external connections.
 
-* Have a host certificate to send the accounting information to the accounting repository. DN of the host certificate must be registered in GOCDB service type eu.egi.cloud.accounting. The host certificate and key in PEM format are expected in /etc/grid-security/hostcert.pem and /etc/grid-security/hostkey.pem respectively.
+* Have a host certificate to send the accounting information to the accounting repository. DN of the host certificate must be registered in GOCDB with service type ``eu.egi.cloud.accounting``. The host certificate and key in PEM format are expected in ``/etc/grid-security/hostcert.pem`` and ``/etc/grid-security/hostkey.pem`` respectively.
 
-* Have enough disk space for handling the VM image replication (~ 100GB for `fedcloud.egi.eu` VO). By default these are stored at /image_data. You can mount a volume at that location.
+* Have enough disk space for handling the VM image replication (~ 100GB for ``fedcloud.egi.eu`` VO). By default these are stored at /image_data. You can mount a volume at that location.
 
 .. Individual Components
    '''''''''''''''''''''
@@ -524,13 +524,23 @@ Using the VM Appliance
 
 `cASO configuration <http://caso.readthedocs.org/en/latest/configuration.html>`_ is stored at  ``/etc/caso/caso.conf``. Most default values should be ok, but you must set:
 
-* ``site_name`` (line 12)
+* ``site_name`` (line 12), with the name of your site as defined in GOCDB.
 
-* ``projects`` (line 20)
+* ``projects`` (line 20), with the list of projects you want to extract accounting from.
 
 * credentials to access the accounting data (lines 28-47, more options also available). Check the `cASO documentation <http://caso.readthedocs.org/en/latest/configuration.html#openstack-configuration>`_ for the expected permissions of the user configured here.
 
-The cron job will use the voms mapping file at ``/etc/voms.json``.
+* The mapping from EGI VOs to your local projects ``/etc/caso/voms.json``, following this format:
+  ::
+
+      {
+         "vo name": {
+             "projects": ["project A that accounts for the vo", "project B that accounts for the VO"]
+         },
+         "another vo": {
+             "projects": ["project C that accounts for the VO"]
+         }
+      }
 
 cASO will write records to ``/var/spool/apel`` from where ssmsend will take them.
 
@@ -547,6 +557,28 @@ Both caso and ssmsend are run via cron scripts. They are located at ``/etc/cron.
 .. Documentation on how to install and configure cASO is available at https://caso.readthedocs.org/en/latest/
 
 .. In order to send the records to the accounting database, you will also need to configure **SSM**, whose documentation can be found at https://github.com/apel/ssm
+
+.. Installation
+.. ~~~~~~~~~~~~
+
+.. Configuration
+.. ~~~~~~~~~~~~~
+
+
+.. Running the services
+.. ~~~~~~~~~~~~~~~~~~~~
+
+.. caso and ssmsend should be run using cron scripts, you can use the following as starting point:
+
+.. ::
+
+..     # Run cASO every hour (expects configuration at /etc/caso/)
+..     14 * * * * root /usr/local/caso/bin/caso-extract >> /var/log/caso.log 2>&1
+
+..     # Send SSM records every 6 hours (expects conifguration at /etc/apel/)
+..     30 */6 * * * root ssmsend >> /var/log/ssm.log 2>&1
+
+
 
 EGI Information System
 ::::::::::::::::::::::
@@ -574,14 +606,14 @@ Site-level BDII
 
 The ``egifedcloud/sitebdii`` container runs this process. Configuration files:
 
-* `/etc/sitebdii/glite-info-site-defaults.conf`. Set here the name of your site (as defined in GOCDB) and the public hostname where the appliance will be available.
+* ``/etc/sitebdii/glite-info-site-defaults.conf``. Set here the name of your site (as defined in GOCDB) and the public hostname where the appliance will be available.
 
-* `/etc/sitebdii/site.cfg`. Include here basic information on your site.
+* ``/etc/sitebdii/site.cfg``. Include here basic information on your site.
 
 Running the services
 ~~~~~~~~~~~~~~~~~~~~
 
-There is a `bdii.service` unit for systemd available in the appliance. This leverages docker-compose for running the containers. You can start the service with:
+There is a ``bdii.service`` unit for systemd available in the appliance. This leverages docker-compose for running the containers. You can start the service with:
 
 ::
 
@@ -629,8 +661,6 @@ You should be able to get the BDII information with an LDAP client, e.g.:
 
 ..    cp /etc/cloud-info-provider/sample.openstack.yaml /etc/cloud-info-provider/openstack.yaml
 
-
-
 .. Once the resource-level BDII is working, you can add it to your site-BDII by adding a new URL like this:
 
 .. ::
@@ -663,7 +693,12 @@ Every 4 hours, the appliance will perform the following actions:
 
 First you need to configure and start the backend. Edit ``/etc/cloudkeeper/cloudkeeper-os.conf`` and add the authentication parameters from line 117 to 136.
 
-Then add as many image lists (one per line) as you would like to subscribe to ``/etc/cloudkeeper/image-lists.conf``. Use URLs with your AppDB token for authentication.
+Then add as many image lists (one per line) as you would like to subscribe to ``/etc/cloudkeeper/image-lists.conf``. Use URLs with your AppDB token for authentication, check the following guides for getting such token and URLs:
+
+* `how to access to VO-wide image lists <https://wiki.appdb.egi.eu/main:faq:how_to_get_access_to_vo-wide_image_lists>`_, and
+
+* `how to subscribe to a private image list <https://wiki.appdb.egi.eu/main:faq:how_to_subscribe_to_a_private_image_list_using_the_vmcatcher>`_.
+
 
 Running the services
 ~~~~~~~~~~~~~~~~~~~~
