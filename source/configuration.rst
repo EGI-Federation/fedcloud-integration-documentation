@@ -28,37 +28,39 @@ Follow these steps if you are using OpenID Connect to integrate with EGI:
 
 #. Expand your mapping.json with the VO membership to the created group (substitute ``group_id`` and ``vo_name`` as appropriate):
    ::
-
-       {
-           "local": [
-               {
-                   "user": {
-                       "name": "{0}"
-                   },
-                   "group": {
-                       "id": "<group_id>"
+       [
+           <existing mappings>,
+           {
+               "local": [
+                   {
+                       "user": {
+                           "name": "{0}"
+                       },
+                       "group": {
+                           "id": "<group_id>"
+                       }
                    }
-               }
-           ],
-           "remote": [
-               {
-                   "type": "HTTP_OIDC_SUB"
-               },
-               {
-                   "type": "HTTP_OIDC_ISS",
-                   "any_one_of": [
-                       "https://aai-dev.egi.eu/oidc/"
-                   ]
-               },
-               {
-                   "type": "OIDC-edu_person_entitlements",
-                   "regex": true,
-                   "any_one_of": [
-                       "^urn:mace:egi.eu:.*:vm_operator@<vo_name>$"
-                   ]
-               }
-           ]
-       }
+               ],
+               "remote": [
+                   {
+                       "type": "HTTP_OIDC_SUB"
+                   },
+                   {
+                       "type": "HTTP_OIDC_ISS",
+                       "any_one_of": [
+                           "https://aai-dev.egi.eu/oidc/"
+                       ]
+                   },
+                   {
+                       "type": "OIDC-edu_person_entitlements",
+                       "regex": true,
+                       "any_one_of": [
+                           "^urn:mace:egi.eu:.*:vm_operator@<vo_name>$"
+                       ]
+                   }
+               ]
+           }
+       ]
 
 #. Update the mapping in your Keystone IdP:
    ::
