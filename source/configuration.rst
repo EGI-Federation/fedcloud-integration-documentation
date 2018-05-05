@@ -28,6 +28,7 @@ Follow these steps if you are using OpenID Connect to integrate with EGI:
 
 #. Expand your mapping.json with the VO membership to the created group (substitute ``group_id`` and ``vo_name`` as appropriate):
    ::
+
        [
            <existing mappings>,
            {
@@ -189,5 +190,13 @@ Add the user configured in cloudkeeper-os as member of the new project:
 
     openstack role add member --user <your cloudkeeper-os user> --project <your new vo project>
 
+Add the mapping of the project to the VO in ``/etc/cloudkeeper-os/voms.json``:
 
+::
+
+    {
+        "<your new vo>": {
+             "tenant": "<your new vo project>"
+        }
+    }
 
