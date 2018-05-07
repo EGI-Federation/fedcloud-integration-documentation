@@ -309,7 +309,7 @@ Define a mapping of users from EGI Check-in to the group just created and restri
                     "type": "OIDC-edu_person_entitlements",
                     "regex": true,
                     "any_one_of": [
-                        "^urn:mace:egi.eu:.*:vm_operator@ops$"
+                        "^urn:mace:egi.eu:group:ops:role=vm_operator#aai.egi.eu$"
                     ]
                 }
             ]
@@ -421,8 +421,7 @@ Configuration can include as many mappings as needed in the json file. Users wil
                     "type": "OIDC-edu_person_entitlements",
                     "regex": true,
                     "any_one_of": [
-                        "^urn:mace:egi.eu:.*:vm_operator@ops$"
-
+                        "^urn:mace:egi.eu:group:ops:role=vm_operator#aai.egi.eu$"
                     ]
                 }
             ]
@@ -452,7 +451,7 @@ Configuration can include as many mappings as needed in the json file. Users wil
                     "type": "OIDC-edu_person_entitlements",
                     "regex": true,
                     "any_one_of": [
-                        "^urn:mace:egi.eu:.*:vm_operator@fedcloud.egi.eu$"
+                        "^urn:mace:egi.eu:group:fedcloud.egi.eu:role=vm_operator#aai.egi.eu$"
                     ]
                 }
             ]
