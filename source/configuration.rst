@@ -120,7 +120,8 @@ When using the Keystone-VOMS module, you should follow these steps:
 OpenNebula
 ::::::::::
 
-yep
+TBC
+
 
 EGI Accounting
 ``````````````
