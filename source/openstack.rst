@@ -760,3 +760,27 @@ After the installation of all the needed components, it is recommended to set th
     sed -i 's|"admin_or_owner":  "is_admin:True or project_id:%(project_id)s",|"admin_or_owner":  "is_admin:True or project_id:%(project_id)s",\n    "admin_or_user":  "is_admin:True or user_id:%(user_id)s",|g' /etc/nova/policy.json
     sed -i 's|"default": "rule:admin_or_owner",|"default": "rule:admin_or_user",|g' /etc/nova/policy.json
     sed -i 's|"compute:get_all": "",|"compute:get": "rule:admin_or_owner",\n    "compute:get_all": "",|g' /etc/nova/policy.json
+
+Upgrading the OpenStack Appliance
+:::::::::::::::::::::::::::::::::
+
+From 2017.08.09 to 2018.05.07
+'''''''''''''''''''''''''''''
+
+Configuration changes:
+
+* This upgrade moves the ``voms.json`` file to the respective ``caso`` and ``cloudkeeper-os`` directories under ``/etc/``
+
+* No other changes in configuration are needed
+
+
+From 20160403 to 2017.08.09
+'''''''''''''''''''''''''''
+
+There are several major changes between these versions, namely:
+
+* atrope has been deprecated and cloudkeeper is used instead. The configuration cannot be reused directly and the new services need to be configured as described above
+
+* caso is upgraded to version 1.1.1, the configuration file has some incompatible changes.
+
+* A new bdii.service is available for managing the process is available.
