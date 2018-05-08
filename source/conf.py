@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'EGI Federated Cloud Integration'
-copyright = '2018, EGI Foundation'
+copyright = '2018, EGI Foundation and contributors'
 author = 'Enol Fernandez <enol.fernandez@egi.eu>'
 
 # The short X.Y version
