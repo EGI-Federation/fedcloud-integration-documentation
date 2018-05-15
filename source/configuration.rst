@@ -19,7 +19,7 @@ Follow these steps if you are using OpenID Connect to integrate with EGI:
 #. Create a group where users belongig to the VO will be mapped to:
    ::
 
-        group_id=$(openstack group create vo_group -f XXX)
+        group_id=$(openstack group create -f value -c id <new_group>)
 
 #. Add that group to the desired local project:
    ::
