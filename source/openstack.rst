@@ -145,6 +145,7 @@ Make sure that you fill in the following options:
 
 * *Access* tab:
 
+    * Enable *openid*, *profile*, *email*, and *refeds_edu* in the **Scope** field
     * Enable *authorization code* in the **Grant Types** field
     * Enable *Allow calls to the Introspection Endpoint?* in **Introspection** field
 
@@ -172,7 +173,7 @@ Include this configuration on the Apache config for the virtual host of your Key
     OIDCResponseType "code"
     OIDCClaimPrefix "OIDC-"
     OIDCClaimDelimiter ;
-    OIDCScope "openid"
+    OIDCScope "openid profile email refeds_edu"
     OIDCProviderMetadataURL https://aai-dev.egi.eu/oidc/.well-known/openid-configuration
     OIDCClientID <client id>
     OIDCClientSecret <client secret>
