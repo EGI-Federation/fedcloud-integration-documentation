@@ -483,7 +483,185 @@ Once tests in the development instance of Check-in are successful, you can move 
 VOMS Support
 ''''''''''''
 
-**VOMS Support using Keystone-VOMS is no longer supported from OpenStack Queens onwards**
+VOMS with FEDERATION-OS (Keystone API v3)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+   Configure VOMS with FEDERATION-OS if your site needs to support a legacy VO relying on VOMS for authorisation, check Keystone-VOMS below for older OpenStack versions.
+
+.. warning::
+   **Work in progress.**
+
+   This is currently being tested and still misses components to be released into CMD!
+
+
+VOMS authentication requires Keystone to be run as a WSGI application behind an Apache server with `gridsite <https://github.com/CESNET/gridsite>`_ and SSL support. GridSite is a set of extensions to the Apache 2.x webserver, which support Grid security based on X.509 certificates.
+
+Packages for gridsite can be obtained from CMD-OS-1. Follow the `CMD-OS-1 guidelines for getting the packages for your distribution <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_.
+
+First install the ``gridsite``, ``fetch-crl`` and ``ca-policy-egi-core`` for your distribution. For Ubuntu 16.04:
+
+::
+
+    apt-get install gridsite fetch-crl ca-policy-egi-core
+
+Configure Apache to use gridsite module (this may differ in your distribution):
+
+::
+
+    a2enmod zgridsite
+
+
+Include these lines on your Apache config for the virtual host of your Keystone service:
+
+::
+
+    # Use the IGTF trust anchors for CAs and CRLs
+    SSLCACertificatePath /etc/grid-security/certificates/
+    SSLCARevocationPath /etc/grid-security/certificates/
+
+    # Verify clients if they send their certificate
+    SSLVerifyClient         optional
+    SSLVerifyDepth          10
+    SSLOptions              +StdEnvVars +ExportCertData
+
+    # Adapt this URL if needed for your deployment
+    <Location /v3/OS-FEDERATION/identity_providers/egi.eu/protocols/mapped/auth>
+        # populate ENV variables
+        GridSiteEnvs on
+        # turn off directory listings
+        GridSiteIndexes off
+        # accept GSI proxies from clients
+        GridSiteGSIProxyLimit 4
+        # disable GridSite method extensions
+        GridSiteMethods ""
+
+        Require all granted
+        Options -MultiViews
+    </Location>
+
+
+Make sure that ``mapped`` authentication method exists in your ``keystone.conf`` in the ``[auth]`` section:
+
+::
+
+    [auth]
+
+    # This may change in your installation, add mapped to the list of the methods you support
+    methods = password, token, oidc, mapped
+
+
+Create an ``egi.eu`` identity provider and any needed groups as described in `Keystone Federation Support`_. Use those groups to create appropriate mappings to the VOs you intend to support, see the following example for ``fedcloud.egi.eu`` VO:
+
+::
+
+    $ cat mapping.voms.json
+    [
+        {
+            "local": [
+                {
+                    "user": {
+                        "name": "{0}",
+                        "type": "ephemeral"
+                    },
+                    "group": {
+                        "id": "fbccb5f81f9741fd8b84736cc10c1d34"
+                    }
+                }
+            ],
+            "remote": [
+                {
+                    "type": "GRST_CRED_AURI_0"
+                },
+                {
+                    "type": "GRST_CRED_AURI_2",
+                    "any_one_of": [
+                        "fqan:/fedcloud.egi.eu/.*"
+                    ],
+                    "regex": true
+                }
+            ]
+        }
+    ]
+    $ openstack mapping create --rules mapping.voms.json voms
+    +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | Field | Value                                                                                                                                                                                                                                                                  |
+    +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | id    | voms                                                                                                                                                                                                                                                                   |
+    | rules | [{u'remote': [{u'type': u'GRST_CRED_AURI_0'}, {u'regex': True, u'type': u'GRST_CRED_AURI_2', u'any_one_of': [u'fqan:/fedcloud.egi.eu/.*']}], u'local': [{u'group': {u'id': u'fbccb5f81f9741fd8b84736cc10c1d34'}, u'user': {u'type': u'ephemeral', u'name': u'{0}'}}]}] |
+    +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Finally add the ``mapped`` protocol to your ``egi.eu`` identity provider with the mapping you have created:
+
+::
+
+    $ openstack  federation protocol create --identity-provider egi.eu --mapping voms  mapped
+    +-------------------+--------+
+    | Field             | Value  |
+    +-------------------+--------+
+    | id                | mapped |
+    | identity_provider | egi.eu |
+    | mapping           | voms   |
+    +-------------------+--------+
+
+For every VO you support you should configure the corresponding ``.lsc`` files at ``/etc/grid-security/vomsdir/<vo name>/``. Those files depend on each VO, check the `Operations Portal <https://operations-portal.egi.eu/vo/search>`_ for details. You can find below the ``fedcloud.egi.eu`` configuration:
+
+::
+
+    $ cat /etc/grid-security/vomsdir/fedcloud.egi.eu/voms1.grid.cesnet.cz.lsc
+    /DC=cz/DC=cesnet-ca/O=CESNET/CN=voms1.grid.cesnet.cz
+    /DC=cz/DC=cesnet-ca/O=CESNET CA/CN=CESNET CA 3
+    $ cat /etc/grid-security/vomsdir/fedcloud.egi.eu/voms2.grid.cesnet.cz.lsc
+    /DC=cz/DC=cesnet-ca/O=CESNET/CN=voms2.grid.cesnet.cz
+    /DC=cz/DC=cesnet-ca/O=CESNET CA/CN=CESNET CA 3
+
+
+You can test easily test the authentication is working using curl with your proxy:
+
+::
+
+    $ curl -s --cert /tmp/x509up_u1000 https://<your keystone host>/v3/OS-FEDERATION/identity_providers/egi.eu/protocols/mapped/auth | python -mjson.tool
+    {
+        "token": {
+            "audit_ids": [
+                "wxB8VZeHSji0D57Z86PSTA"
+            ],
+            "expires_at": "2018-08-24T12:40:41.000000Z",
+            "issued_at": "2018-08-24T11:40:41.000000Z",
+            "methods": [
+                "mapped"
+            ],
+            "user": {
+                "OS-FEDERATION": {
+                    "groups": [
+                        {
+                            "id": "fbccb5f81f9741fd8b84736cc10c1d34"
+                        }
+                    ],
+                    "identity_provider": {
+                        "id": "egi.eu"
+                    },
+                    "protocol": {
+                        "id": "mapped"
+                    }
+                },
+                "domain": {
+                    "id": "Federated",
+                    "name": "Federated"
+                },
+                "id": "ea6520b3ad34400ba07115f7a3987a6b",
+                "name": "dn:/DC=org/DC=terena/DC=tcs/C=NL/O=EGI/OU=UCST/CN=Enol+Fernandez"
+            }
+        }
+    }
+
+Keystone-VOMS (Keystone API v2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. caution::
+   **VOMS Support using Keystone-VOMS is no longer supported from OpenStack Queens onwards**.
+   You should use `VOMS with FEDERATION-OS (Keystone API v3)`_ or `OpenID Connect Support`_ instead.
 
 Support for authenticating users with X.509 certificates with VOMS extensions is achieved with Keystone-VOMS extension. Documentation is available at https://keystone-voms.readthedocs.io/
 
