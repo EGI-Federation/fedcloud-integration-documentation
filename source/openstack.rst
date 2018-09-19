@@ -204,6 +204,15 @@ Be sure to enable the mod_auth_oidc module in Apache, in Ubuntu:
 
     sudo a2enmod auth_openidc
 
+.. note::
+   If running Keystone behind a proxy, make sure to correctly set the X-Forwarded-Proto and X-Forwarded-Port request headers, e.g. for haproxy:
+
+   ::
+
+       http-request set-header X-Forwarded-Proto https if { ssl_fc }
+       http-request set-header X-Forwarded-Proto http if !{ ssl_fc }
+       http-request set-header X-Forwarded-Port %[dst_port]
+
 Keystone Configuration
 ~~~~~~~~~~~~~~~~~~~~~~
 
