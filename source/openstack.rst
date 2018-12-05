@@ -514,7 +514,7 @@ VOMS authentication requires Keystone to be run as a WSGI application behind an 
 
 Packages for gridsite can be obtained from CMD-OS-1. Follow the `CMD-OS-1 guidelines for getting the packages for your distribution <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_.
 
-First install the ``gridsite``, ``fetch-crl`` and ``ca-policy-egi-core`` for your distribution. For Ubuntu 16.04:
+First install the ``gridsite``, ``fetch-crl`` and ``ca-policy-egi-core`` for your distribution, ensuring that ``gridsite`` is at least version ``2.3.2``. For Ubuntu 16.04:
 
 ::
 
@@ -566,9 +566,23 @@ Make sure that ``mapped`` authentication method exists in your ``keystone.conf``
     methods = password, token, oidc, mapped
 
 
-Create an ``egi.eu`` identity provider and any needed groups as described in `Keystone Federation Support`_. Use those groups to create appropriate mappings to the VOs you intend to support, see the following example for ``fedcloud.egi.eu`` VO:
+Create an ``egi.eu`` identity provider and any needed groups as described in
+`Keystone Federation Support`_ (do not forget to add roles to the new group).
+Use those groups to create appropriate mappings to the VOs you intend to
+support.  You can use the ``GRST_VOMS_FQANS`` to match to the VOMS FQAN that
+you want to create the mapping for. The following is an example for the
+``fedcloud.egi.eu`` VO:
 
 ::
+    $ openstack group crate fedcloud.egi.eu
+    +-------------+----------------------------------+
+    | Field       | Value                            |
+    +-------------+----------------------------------+
+    | description |                                  |
+    | domain_id   | default                          |
+    | id          | fbccb5f81f9741fd8b84736cc10c1d34 |
+    | name        | fedcloud.egi.eu                  |
+    +-------------+----------------------------------+
 
     $ cat mapping.voms.json
     [
@@ -586,10 +600,7 @@ Create an ``egi.eu`` identity provider and any needed groups as described in `Ke
             ],
             "remote": [
                 {
-                    "type": "GRST_CRED_AURI_0"
-                },
-                {
-                    "type": "GRST_CRED_AURI_2",
+                    "type": "GRST_VOMS_FQANS",
                     "any_one_of": [
                         "fqan:/fedcloud.egi.eu/.*"
                     ],
