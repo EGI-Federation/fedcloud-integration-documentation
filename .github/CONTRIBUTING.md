@@ -10,21 +10,9 @@ Please take a few moments to read this short guide on how to contribute; bear in
 If you wish to discuss anything related to the project, please open an issue or start a topic on the [EGI Community Forum](https://community.egi.eu).
 The maintainers will sometimes move issues off of GitHub to the community forum if it is thought that longer, more open-ended discussion would be beneficial, including a wider community scope.
 
-## Kinds of contributions
-
-The maintainers recognise that contributions can be made in many forms, depending on the skills, experience and perspectives of interested parties.
-**The maintainers recognise the multilingual nature of the community and welcome translations of the documentation and project supporting files**.
-We undertake to identify these contributions through consensus-building and recognise them as formal contributions to the project where applicable.
-Contributions may come in the form of:
-
-- Feature or documentation requests, where they describe a need or gap
-- Authoring or review of releases
-- Direct authorship of code or documentation
-- Identifying and fixing bugs
-
 ## Contribution Process
 
-Before proposing a contribution via pull request, please ensure that an issue is open describing the need for your contribution. You will need to refer to this issue number when you submit the pull request. We have a 3 step process for contributions. 
+Before proposing a contribution via pull request, ideally there is an open issue describing the need for your contribution (refer to this issue number when you submit the pull request). We have a 3 step process for contributions.
 
   1. Fork the project if you have not, and commit changes to a git branch
   1. Create a GitHub Pull Request for your change, following the instructions in the pull request template.
@@ -40,7 +28,7 @@ Code review takes place in GitHub pull requests. See [this article](https://help
 
 Once you open a pull request, maintainers will review your code using the built-in code review process in Github PRs. The process at this point is as follows:
 
-1. A maintainer will review your code and merge it if no changes are necessary. Your change will be merged into the repository's `master` branch and will be noted in the project's `CHANGELOG.md` at the time of release.
+1. A maintainer will review your code and merge it if no changes are necessary. Your change will be merged into the repository's `master` branch.
 1. If a maintainer has feedback or questions on your changes they they will set `request changes` in the review and provide an explanation.
 
 ## Using git
@@ -64,9 +52,9 @@ It is a best practice to have your commit message have a _summary line_ that inc
       values, and it is older than "old stable" debian release
 ```
 
-## Release cycle 
+## Release cycle
 
-master branch is always available at http://egi-federated-cloud-integration.readthedocs.io/en/latest/ 
+master branch is always available at http://egi-federated-cloud-integration.readthedocs.io/en/latest/
 tagged versions may be created as needed following [Semantic Versioning](https://semver.org/) as far as applicable.
 
 ## Community
