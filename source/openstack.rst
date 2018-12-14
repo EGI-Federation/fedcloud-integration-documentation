@@ -1,5 +1,4 @@
 .. toctree::
-.. sectnum::
 
 OpenStack
 `````````
