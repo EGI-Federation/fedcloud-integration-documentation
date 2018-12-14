@@ -106,7 +106,7 @@ The following **services** must be accessible to allow access to an OpenStack-ba
 Permissions
 :::::::::::
 
-This is an overview of the expected account permissions used in an OpenStack site, these accounts can be merged as neede for your deployment:
+This is an overview of the expected account permissions used in an OpenStack site, these accounts can be merged as needed for your deployment:
 
 
 +---------------+------------------------------------------------------------------------------------------------+
@@ -116,7 +116,7 @@ This is an overview of the expected account permissions used in an OpenStack sit
 +---------------+------------------------------------------------------------------------------------------------+
 | accounting    | Member of all projects and able to list users (allowed to ``identity:list_users`` in keystone) |
 +---------------+------------------------------------------------------------------------------------------------+
-| cloud-keeper  | Permission to manage the images for all the projects supportin EGI VOs                         |
+| cloud-keeper  | Permission to manage the images for all the projects supporting EGI VOs                        |
 +---------------+------------------------------------------------------------------------------------------------+
 | Other users   | Automatically created by Keystone and permission set as configured in the mappings             |
 +---------------+------------------------------------------------------------------------------------------------+
@@ -573,6 +573,7 @@ you want to create the mapping for. The following is an example for the
 ``fedcloud.egi.eu`` VO:
 
 ::
+
     $ openstack group crate fedcloud.egi.eu
     +-------------+----------------------------------+
     | Field       | Value                            |
