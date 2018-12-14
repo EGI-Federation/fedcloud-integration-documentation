@@ -147,7 +147,7 @@ Make sure that you fill in the following options:
 
 * *Access* tab:
 
-    * Enable *openid*, *profile*, *email*, and *refeds_edu* in the **Scope** field
+    * Enable *openid*, *profile*, *email*, *eduperson_entitlement* and *refeds_edu* in the **Scope** field
     * Enable *authorization code* in the **Grant Types** field
     * Enable *Allow calls to the Introspection Endpoint?* in **Introspection** field
 
@@ -175,7 +175,7 @@ Include this configuration on the Apache config for the virtual host of your Key
     OIDCResponseType "code"
     OIDCClaimPrefix "OIDC-"
     OIDCClaimDelimiter ;
-    OIDCScope "openid profile email refeds_edu"
+    OIDCScope "openid profile email eduperson_entitlement refeds_edu"
     OIDCProviderMetadataURL https://aai-dev.egi.eu/oidc/.well-known/openid-configuration
     OIDCClientID <client id>
     OIDCClientSecret <client secret>
@@ -574,7 +574,7 @@ you want to create the mapping for. The following is an example for the
 
 ::
 
-    $ openstack group crate fedcloud.egi.eu
+    $ openstack group create fedcloud.egi.eu
     +-------------+----------------------------------+
     | Field       | Value                            |
     +-------------+----------------------------------+
@@ -600,9 +600,12 @@ you want to create the mapping for. The following is an example for the
             ],
             "remote": [
                 {
+                    "type": "GRST_CONN_AURI_0"
+                },
+                {
                     "type": "GRST_VOMS_FQANS",
                     "any_one_of": [
-                        "fqan:/fedcloud.egi.eu/.*"
+                        "^/fedcloud.egi.eu/.*"
                     ],
                     "regex": true
                 }
@@ -610,12 +613,12 @@ you want to create the mapping for. The following is an example for the
         }
     ]
     $ openstack mapping create --rules mapping.voms.json voms
-    +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | Field | Value                                                                                                                                                                                                                                                                  |
-    +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | id    | voms                                                                                                                                                                                                                                                                   |
-    | rules | [{u'remote': [{u'type': u'GRST_CRED_AURI_0'}, {u'regex': True, u'type': u'GRST_CRED_AURI_2', u'any_one_of': [u'fqan:/fedcloud.egi.eu/.*']}], u'local': [{u'group': {u'id': u'fbccb5f81f9741fd8b84736cc10c1d34'}, u'user': {u'type': u'ephemeral', u'name': u'{0}'}}]}] |
-    +-------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | Field | Value                                                                                                                                                                                                                                                             |
+    +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | id    | voms                                                                                                                                                                                                                                                              |
+    | rules | [{u'remote': [{u'type': u'GRST_CONN_AURI_0'}, {u'regex': True, u'type': u'GRST_VOMS_FQANS', u'any_one_of': [u'^/fedcloud.egi.eu/.*']}], u'local': [{u'group': {u'id': u'7d9a21050cef48889f23eb9d5f7fef51'}, u'user': {u'type': u'ephemeral', u'name': u'{0}'}}]}] |
+    +-------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 Finally add the ``mapped`` protocol to your ``egi.eu`` identity provider with the mapping you have created:
 
