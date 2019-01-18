@@ -8,6 +8,7 @@ EGI Federated Cloud Integration
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
    :caption: Contents:
 
    requirements
