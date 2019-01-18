@@ -1,5 +1,5 @@
 <!--
-Thank you for opening an issue in our cloud info provider.
+Thank you for opening an issue in our documenation.
 Please use the template below to construct the issue.
 
 Dealing with issues:
