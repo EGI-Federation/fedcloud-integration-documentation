@@ -51,12 +51,16 @@ Optionally, **ooi (OpenStack OCCI Interface)** translates between OpenStack API 
 Installation options
 ::::::::::::::::::::
 
-.. There are two options to install these components:
-   * Using the EGI FedCloud Appliance (recommended), which uses docker containers to bundle an OpenStack deployment of the corresponding services
-   * Using individual components.
+EGI distributes the integration components as:
 
-FedCloud Appliance
-''''''''''''''''''
+* A Virtual Appliance (VA) that uses Docker containers to bundle all of the
+  components in a single VM and just needs minor configuration to get
+  started
+
+* RPM and DEB Packages in the `CMD distribution <https://wiki.egi.eu/wiki/EGI_Cloud_Middleware_Distribution>`_
+
+FedCloud Virtual Appliance
+''''''''''''''''''''''''''
 
 The EGI FedCloud Appliance is available at `AppDB <https://appdb.egi.eu/store/vappliance/fedcloud.integration.appliance.openstack>`_ as an OVA file. You can easily extract the VMDK disk by untaring and optionally converting it to your preferred format with qemu-img:
 
@@ -76,9 +80,13 @@ The appliance running at your OpenStack must:
 
 * Have enough disk space for handling the VM image replication (~ 100GB for ``fedcloud.egi.eu`` VO). By default these are stored at /image_data. You can mount a volume at that location.
 
-.. Individual Components
-   '''''''''''''''''''''
-   You can use the CMD repository to install packages for your distribution. Follow `the instructions for setuing up the repos <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_.
+CMD Packages
+''''''''''''
+
+The CMD-OS repository provides packages that have gone through a quality assurance
+process for the supported distributions. Follow the `the instructions for seting up
+the repos <http://repository.egi.eu/category/os-distribution/cmd-os-1/>`_ to
+install the packages.
 
 Open Ports
 ::::::::::
