@@ -143,7 +143,7 @@ Make sure that you fill in the following options:
 
 * *Main* tab:
 
-    * Set redirect URL to ``https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/oidc/redirect``. Recent versions of OpenStack may deploy Keystone at ``/identity/``, be sure to include that in the ``<your keystone endpoint>`` part of the URL if needed.
+    * Set redirect URL to ``https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/openid/redirect``. Recent versions of OpenStack may deploy Keystone at ``/identity/``, be sure to include that in the ``<your keystone endpoint>`` part of the URL if needed.
 
 * *Access* tab:
 
@@ -180,7 +180,7 @@ Include this configuration on the Apache config for the virtual host of your Key
     OIDCClientID <client id>
     OIDCClientSecret <client secret>
     OIDCCryptoPassphrase <some crypto pass phrase>
-    OIDCRedirectURI https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/oidc/redirect
+    OIDCRedirectURI https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/openid/redirect
 
     # OAuth for CLI access
     OIDCOAuthIntrospectionEndpoint  https://aai-dev.egi.eu/oidc/introspect
@@ -190,12 +190,12 @@ Include this configuration on the Apache config for the virtual host of your Key
     # Increase Shm cache size for supporting long entitlements
     OIDCCacheShmEntrySizeMax 33297
 
-    <Location ~ "/v3/auth/OS-FEDERATION/websso/oidc">
+    <Location ~ "/v3/auth/OS-FEDERATION/websso/openid">
             AuthType  openid-connect
             Require   valid-user
     </Location>
 
-    <Location ~ "/v3/OS-FEDERATION/identity_providers/egi.eu/protocols/oidc/auth">
+    <Location ~ "/v3/OS-FEDERATION/identity_providers/egi.eu/protocols/openid/auth">
             Authtype oauth20
             Require   valid-user
     </Location>
@@ -218,24 +218,22 @@ Be sure to enable the mod_auth_oidc module in Apache, in Ubuntu:
 Keystone Configuration
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Configure your ``keystone.conf`` to include in the ``[auth]`` section ``oidc`` in the list of authentication methods and the ``keystone.auth.plugins.mapped.Mapped`` class for its implementation:
+Configure your ``keystone.conf`` to include in the ``[auth]`` section ``openid`` in the list of authentication methods:
 
 
 ::
 
     [auth]
 
-    # This may change in your installation, add oidc to the list of the methods you support
-    methods = password, token, oidc
+    # This may change in your installation, add openid to the list of the methods you support
+    methods = password, token, openid
 
-    # OIDC is basically mapped auth method
-    oidc = keystone.auth.plugins.mapped.Mapped
 
-Add a ``[oidc]`` section as follows:
+Add a ``[openid]`` section as follows:
 
 ::
 
-    [oidc]
+    [openid]
     # this is the attribute in the Keystone environment that will define the identity provider
     remote_id_attribute = HTTP_OIDC_ISS
 
@@ -351,11 +349,11 @@ Finally, create the federated protocol with the identity provider and mapping cr
 
 ::
 
-    $ openstack federation protocol create --identity-provider egi.eu --mapping egi-mapping oidc
+    $ openstack federation protocol create --identity-provider egi.eu --mapping egi-mapping openid 
     +-------------------+-------------+
     | Field             | Value       |
     +-------------------+-------------+
-    | id                | oidc        |
+    | id                | openid      |
     | identity_provider | egi.eu      |
     | mapping           | egi-mapping |
     +-------------------+-------------+
@@ -377,7 +375,7 @@ Edit your local_settings.py to include the following values:
     # with EGI Check-in
     WEBSSO_CHOICES = (
         ("credentials", _("Keystone Credentials")),
-        ("oidc", _("EGI Check-in")),
+        ("openid", _("EGI Check-in")),
     )
 
 Once horizon is restarted you will be able to choose "EGI Check-in" for login.
@@ -391,7 +389,7 @@ The `OpenStack Client <https://docs.openstack.org/developer/python-openstackclie
 ::
 
     $ openstack --os-auth-url https://<your keystone endpoint>/v3 \
-                --os-auth-type v3oidcaccesstoken --os-protocol oidc \
+                --os-auth-type v3oidcaccesstoken --os-protocol openid \
                 --os-identity-provider egi.eu \
                 --os-access-token <your access token> \
                 token issue
@@ -562,7 +560,7 @@ Make sure that ``mapped`` authentication method exists in your ``keystone.conf``
     [auth]
 
     # This may change in your installation, add mapped to the list of the methods you support
-    methods = password, token, oidc, mapped
+    methods = password, token, openid, mapped
 
 
 Create an ``egi.eu`` identity provider and any needed groups as described in
