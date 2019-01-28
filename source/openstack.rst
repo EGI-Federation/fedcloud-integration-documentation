@@ -188,7 +188,7 @@ Include this configuration on the Apache config for the virtual host of your Key
     OIDCOAuthClientSecret <client secret>
 
     # Increase Shm cache size for supporting long entitlements
-    OIDCCacheShmEntrySizeMax 33297
+    OIDCCacheShmEntrySizeMax 65536
 
     <Location ~ "/v3/auth/OS-FEDERATION/websso/openid">
             AuthType  openid-connect
