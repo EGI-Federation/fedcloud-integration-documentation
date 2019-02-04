@@ -505,7 +505,7 @@ Once tests in the development instance of Check-in are successful, you can move 
 
    If you want to make any changes to the client configuration of the
    production instance, first make the changes in the Check-in development
-   environment and then open a open a `GGUS ticket <https://ggus.eu>`_
+   environment and then open a `GGUS ticket <https://ggus.eu>`_
    to sync the changes to production.
 
 VOMS Support
