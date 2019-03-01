@@ -173,6 +173,20 @@ Pre-requisites
 
 #. You need to install `mod_auth_openidc <https://github.com/pingidentity/mod_auth_openidc>`_ for adding support for OpenID Connect to Apache.
 
+.. note::
+   EGI monitoring checks that your Keystone accepts clients with certificates
+   from the IGTF CAs. Please ensure that your server is correctly configured
+   with the correct Certificate and Revocation path:
+
+   :: 
+
+      SSLCACertificatePath    /etc/grid-security/certificates
+      SSLCARevocationPath     /etc/grid-security/certificates
+
+   IGTF CAs can be obtained from UMD, you can find repo files for your distribution
+   at http://repository.egi.eu/sw/production/cas/1/current/
+
+
 Apache Configuration
 ~~~~~~~~~~~~~~~~~~~~
 
