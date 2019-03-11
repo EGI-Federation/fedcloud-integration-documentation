@@ -35,13 +35,13 @@ The integration is performed by a set of EGI components that interact with the O
 
 .. image:: /_static/OpenStackSite.png
 
-* Authentication of EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to  allow users with a valid VOMS proxy to obtain tokens to access your OpenStack deployment.
+* Authentication of EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to allow users with a valid VOMS proxy to obtain tokens to access your OpenStack deployment.
 
 * **cASO** collects accounting data from OpenStack and uses **SSM** to send the records to the central accounting database on the EGI Accounting service (APEL)
 
 * **cloud-info-provider** registers the RC configuration and description through the EGI Information System to facilitate service discovery
 
-* **cloudkeeper** (and **cloudkeeper-os**) synchronises with `EGI AppDB <https://appdb.egi.eu/browse/cloud>`_  so new or updated images can be provided by the RC to user communities (VO).
+* **cloudkeeper** (and **cloudkeeper-os**) synchronises with `EGI AppDB <https://appdb.egi.eu/browse/cloud>`_ so new or updated images can be provided by the RC to user communities (VO).
 
 Not all EGI components need to share the same credentials. They are individually configured, you can use different credentials and permissions if desired.
 
@@ -138,7 +138,7 @@ OpenID Connect Support
 
 The integration of OpenStack service providers into the EGI Check-in is a two-step process:
 
-#. Test integration with the development instance of EGI Check-in. This will allow you to check complete the complete functionality of the system without affecting  the production Check-in service.
+#. Test integration with the development instance of EGI Check-in. This will allow you to check complete the complete functionality of the system without affecting the production Check-in service.
 
 #. Once the integration is working correctly, register your provider with the production instance of EGI Check-in to allow members of the EGI User Community to access your service.
 
@@ -205,7 +205,7 @@ Include this configuration on the Apache config for the virtual host of your Key
     OIDCRedirectURI https://<your keystone endpoint>/v3/auth/OS-FEDERATION/websso/openid/redirect
 
     # OAuth for CLI access
-    OIDCOAuthIntrospectionEndpoint  https://aai-dev.egi.eu/oidc/introspect
+    OIDCOAuthIntrospectionEndpoint https://aai-dev.egi.eu/oidc/introspect
     OIDCOAuthClientID <client id>
     OIDCOAuthClientSecret <client secret>
 
@@ -213,13 +213,13 @@ Include this configuration on the Apache config for the virtual host of your Key
     OIDCCacheShmEntrySizeMax 65536
 
     <Location ~ "/v3/auth/OS-FEDERATION/websso/openid">
-            AuthType  openid-connect
-            Require   valid-user
+            AuthType openid-connect
+            Require valid-user
     </Location>
 
     <Location ~ "/v3/OS-FEDERATION/identity_providers/egi.eu/protocols/openid/auth">
             Authtype oauth20
-            Require   valid-user
+            Require valid-user
     </Location>
 
 Be sure to enable the mod_auth_oidc module in Apache, in Ubuntu:
@@ -652,7 +652,7 @@ Finally add the ``mapped`` protocol to your ``egi.eu`` identity provider with th
 
 ::
 
-    $ openstack  federation protocol create --identity-provider egi.eu --mapping voms  mapped
+    $ openstack federation protocol create --identity-provider egi.eu --mapping voms mapped
     +-------------------+--------+
     | Field             | Value  |
     +-------------------+--------+
