@@ -511,7 +511,12 @@ Once tests in the development instance of Check-in are successful, you can move 
     $ sed -i 's/aai-dev.egi.eu/aai.egi.eu/' mapping.egi.json
     $ openstack mapping set --rules mapping.egi.json egi-mapping
 
-* Update your client secret and client ID in the Apache configuration
+* Update Apache configuration to use `aai.egi.eu` instead of `aai-dev.egi.eu`:
+
+::
+
+    OIDCProviderMetadataURL https://aai.egi.eu/oidc/.well-known/openid-configuration
+    OIDCOAuthIntrospectionEndpoint https://aai.egi.eu/oidc/introspect
 
 .. note::
 
