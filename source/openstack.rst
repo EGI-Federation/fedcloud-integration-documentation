@@ -210,7 +210,7 @@ Pre-requisites
         cat /etc/grid-security/certificates/*.r0 > /etc/haproxy/certs/igtf-crls-bundle.pem
         # Some CRLs files are not ending with a new line
         # Ensuring that CRLs markers are separated by a line feed
-        perl -pe  's/----------/-----\n-----/' -i /etc/haproxy/certs/igtf-crls-bundle.pem
+        perl -pe 's/----------/-----\n-----/' -i /etc/haproxy/certs/igtf-crls-bundle.pem
 
 Apache Configuration
 ~~~~~~~~~~~~~~~~~~~~
