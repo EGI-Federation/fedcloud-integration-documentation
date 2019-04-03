@@ -185,25 +185,6 @@ Pre-requisites
       SSLCACertificatePath    /etc/grid-security/certificates
       SSLCARevocationPath     /etc/grid-security/certificates
 
-   For Nginx
-     CA and CRLS have to be bundled into one file.
-
-     Client authentication should be set as optional otherwise accepted CAs won't be presented to the EGI monitoring.
-     ::
-
-       # Server certificate and CA
-       ssl_certificate "/etc/nginx/certs/fullchain.pem";
-       # Server certificate's key
-       ssl_certificate_key "/etc/nginx/certs/privkey.pem";
-       # All IGTF CAs concatenated to one file
-       ssl_client_certificate "/etc/nginx/certs/igtf/igtf-cas.pem";
-       # All IGTF CRLs concatenated to one file
-       ssl_crl "/etc/nginx/certs/igtf/igtf-cas.crls";
-       # Enable optional X509 client authentication
-       ssl_verify_client optional;
-       # required to verify intermediate and root CA certficates
-       ssl_verify_depth 2;
-
    For haproxy
      CA and CRLS have to be bundled into one file.
 
@@ -225,11 +206,11 @@ Pre-requisites
       Please update CAs bundle after IGTF updates, and CRLs bundle after each CRLs update made by fetch-crl.
       ::
 
-        cat /etc/grid-security/certificates/*.pem > /etc/nginx/certs/igtf-cas-bundle.pem
-        cat /etc/grid-security/certificates/*.r0 > /etc/nginx/certs/igtf-crls-bundle.pem
+        cat /etc/grid-security/certificates/*.pem > /etc/haproxy/certs/igtf-cas-bundle.pem
+        cat /etc/grid-security/certificates/*.r0 > /etc/haproxy/certs/igtf-crls-bundle.pem
         # Some CRLs files are not ending with a new line
         # Ensuring that CRLs markers are separated by a line feed
-        perl -pe  's/----------/-----\n-----/' -i /etc/nginx/certs/igtf-crls-bundle.pem
+        perl -pe  's/----------/-----\n-----/' -i /etc/haproxy/certs/igtf-crls-bundle.pem
 
 Apache Configuration
 ~~~~~~~~~~~~~~~~~~~~
