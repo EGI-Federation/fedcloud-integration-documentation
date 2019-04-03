@@ -228,9 +228,8 @@ Pre-requisites
         cat /etc/grid-security/certificates/*.pem > /etc/nginx/certs/igtf-cas-bundle.pem
         cat /etc/grid-security/certificates/*.r0 > /etc/nginx/certs/igtf-crls-bundle.pem
         # Some CRLs files are not ending with a new line
-        # Ensuring that CRLs markers are separated by a line return
-        # Use "ctrl+v Enter" to type the line return character shown as ^M
-        sed -i -e 's/----------/-----^M-----/' /etc/nginx/certs/igtf-crls-bundle.pem
+        # Ensuring that CRLs markers are separated by a line feed
+        perl -pe  's/----------/-----\n-----/' -i /etc/nginx/certs/igtf-crls-bundle.pem
 
 Apache Configuration
 ~~~~~~~~~~~~~~~~~~~~
