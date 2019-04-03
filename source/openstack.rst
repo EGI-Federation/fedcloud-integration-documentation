@@ -29,7 +29,7 @@ EGI expects the following OpenStack services to be available and accessible from
 
 * Swift (if providing Object Storage)
 
-FedCloud components are distributed through `CMD (Cloud Middleware Distribution) <https://wiki.egi.eu/wiki/EGI_Cloud_Middleware_Distribution>`_ or docker container images available in dockerhub. These docker containers come pre-packaged and ready to use in the EGI FedCloud Appliance so you do not need to install any extra components on your site but just run a VM and configure it approprietely to interact with your services.
+FedCloud components are distributed through `CMD (Cloud Middleware Distribution) <https://wiki.egi.eu/wiki/EGI_Cloud_Middleware_Distribution>`_ or docker container images available in `dockerhub <https://hub.docker.com/>`_. These docker containers come pre-packaged and ready to use in the EGI FedCloud Appliance so you do not need to install any extra components on your site but just run a VM and configure it approprietely to interact with your services.
 
 The integration is performed by a set of EGI components that interact with the OpenStack services APIs:
 
@@ -37,7 +37,7 @@ The integration is performed by a set of EGI components that interact with the O
 
 * Authentication of EGI users into your system is performed by configuring the native OpenID Connect support of Keystone. Support for legacy VOs using VOMS requires the installation of the **Keystone-VOMS Authorization plugin** to allow users with a valid VOMS proxy to obtain tokens to access your OpenStack deployment.
 
-* **cASO** collects accounting data from OpenStack and uses **SSM** to send the records to the central accounting database on the EGI Accounting service (APEL)
+* **cASO** collects accounting data from OpenStack and uses **SSM** to send the records to the central accounting database on the EGI Accounting service (`APEL <https://apel.github.io/>`_)
 
 * **cloud-info-provider** registers the RC configuration and description through the EGI Information System to facilitate service discovery
 
@@ -175,17 +175,42 @@ Pre-requisites
 
 .. note::
    EGI monitoring checks that your Keystone accepts clients with certificates
-   from the IGTF CAs. Please ensure that your server is correctly configured
+   from the IGTF CAs. Please ensure that your server is configured
    with the correct Certificate and Revocation path:
 
-   :: 
+   For Apache HTTPd
+     HTTPd is able to use CAs and CRLs contained in a directory
+     ::
 
       SSLCACertificatePath    /etc/grid-security/certificates
       SSLCARevocationPath     /etc/grid-security/certificates
 
-   IGTF CAs can be obtained from UMD, you can find repo files for your distribution
-   at http://repository.egi.eu/sw/production/cas/1/current/
+   For haproxy
+     CA and CRLS have to be bundled into one file.
 
+     Client authentication should be set as optional otherwise accepted CAs won't be presented to the EGI monitoring.
+     ::
+
+       # crt: concatenated cert, key and CA
+       # ca-file: all IGTF CAs, concatenated as one file
+       # crl-file: all IGTF CRLs, concatenated as one file
+       # verify: enable optional X509 client authentication
+       bind XXX.XXX.XXX.XXX:443 ssl crt /etc/haproxy/certs/host-cert-with-key-and-ca.pem ca-file /etc/haproxy/certs/igtf-cas-bundle.pem crl-file /etc/haproxy/certs/igtf-crls-bundle.pem verify optional
+
+   Managing IGTF CAs and CRLs
+      IGTF CAs can be obtained from UMD, you can find repo files for your distribution
+      at http://repository.egi.eu/sw/production/cas/1/current/
+
+      IGTF CAs and CRLs can be bundled using the examples command hereafter.
+
+      Please update CAs bundle after IGTF updates, and CRLs bundle after each CRLs update made by fetch-crl.
+      ::
+
+        cat /etc/grid-security/certificates/*.pem > /etc/haproxy/certs/igtf-cas-bundle.pem
+        cat /etc/grid-security/certificates/*.r0 > /etc/haproxy/certs/igtf-crls-bundle.pem
+        # Some CRLs files are not ending with a new line
+        # Ensuring that CRLs markers are separated by a line feed
+        perl -pe 's/----------/-----\n-----/' -i /etc/haproxy/certs/igtf-crls-bundle.pem
 
 Apache Configuration
 ~~~~~~~~~~~~~~~~~~~~
