@@ -9,17 +9,6 @@ Latest version always available at: http://egi-federated-cloud-integration.readt
 Documentation is written in reStructuredText, built using Sphinx and publihsed
 online using http://readthedocs.io.
 
-## Building and previewing locally
-
-It's possible to build and test output locally using python packages installed using pip.
-Preferably using [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv).
-
-```console
-pip install -r requirements.txt
-make html
-firefox build/html/index.html
-```
-
 ## Contributing
 
 As a community of practice, we welcome contributions which work smoother and help us be more inclusive.
