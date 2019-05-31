@@ -956,7 +956,7 @@ Every 4 hours, the appliance will perform the following actions:
 
 * synchronise this information to the configured glance endpoint
 
-First you need to configure and start the backend. Edit ``/etc/cloudkeeper/cloudkeeper-os.conf`` and add the authentication parameters from line 117 to 136.
+First you need to configure and start the backend. Edit ``/etc/cloudkeeper-os/cloudkeeper-os.conf`` and add the authentication parameters from line 117 to 136.
 
 Then add as many image lists (one per line) as you would like to subscribe to ``/etc/cloudkeeper/image-lists.conf``. Use URLs with your AppDB token for authentication, check the following guides for getting such token and URLs:
 
