@@ -23,7 +23,11 @@ If offering OCCI interface, sites should register:
 
 If offering native OpenStack access (nova), register:
 
-* **org.openstack.nova** for the Nova endpoint of the site.  The endpoint URL must contain the Keystone URL.
+* **org.openstack.nova** for the Nova endpoint of the site.  The endpoint URL must contain the Keystone URL:
+
+    ::
+
+        https://hostname:port/url
 
 If offering native OpenStack access (swift), register:
 
