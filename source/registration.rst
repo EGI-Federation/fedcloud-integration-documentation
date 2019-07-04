@@ -23,19 +23,19 @@ If offering OCCI interface, sites should register:
 
 If offering native OpenStack access (nova), register:
 
-* **org.openstack.nova** for the Nova endpoint of the site.  The endpoint URL must contain the Keystone URL:
+* **org.openstack.nova** for the Nova endpoint of the site. The endpoint URL must contain the Keystone v3 URL:
 
     ::
 
-        https://hostname:port/url
+        https://hostname:port/url/v3
 
 If offering native OpenStack access (swift), register:
 
-* **org.openstack.swift** for the swift endpoint of the site. The endpoint URL field must contain Keystone URL:
+* **org.openstack.swift** for the swift endpoint of the site. The endpoint URL field must contain Keystone v3 URL:
 
     ::
 
-        https://hostname:port/url
+        https://hostname:port/url/v3
 
 .. TODO: CLARIFY IF THIS IS TRUE, not bringing any value atm
     Site should also declare the following properties using the *Site Extension Properties* feature:
