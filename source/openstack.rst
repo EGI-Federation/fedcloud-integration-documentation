@@ -247,6 +247,16 @@ Include this configuration on the Apache config for the virtual host of your Key
             Require valid-user
     </Location>
 
+If you have multiple keystone hosts, configure an alternative caching mechanism as per
+https://github.com/zmartzone/mod_auth_openidc/wiki/Caching
+
+For example, using memcache
+
+::
+
+    OIDCCacheType memcache
+    OIDCMemCacheServers "memcache1 memcache2 memcache3"
+
 Be sure to enable the mod_auth_oidc module in Apache, in Ubuntu:
 
 ::
