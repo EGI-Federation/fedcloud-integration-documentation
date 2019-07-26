@@ -188,7 +188,7 @@ Pre-requisites
    For haproxy
      CA and CRLS have to be bundled into one file.
 
-     Client authentication should be set as optional otherwise accepted CAs won't be presented to the EGI monitoring.
+     Client verification should be set as optional otherwise accepted CAs won't be presented to the EGI monitoring.
      ::
 
        # crt: concatenated cert, key and CA
@@ -196,6 +196,16 @@ Pre-requisites
        # crl-file: all IGTF CRLs, concatenated as one file
        # verify: enable optional X509 client authentication
        bind XXX.XXX.XXX.XXX:443 ssl crt /etc/haproxy/certs/host-cert-with-key-and-ca.pem ca-file /etc/haproxy/certs/igtf-cas-bundle.pem crl-file /etc/haproxy/certs/igtf-crls-bundle.pem verify optional
+
+   For nginx
+     CA and CRLS have to be bundled into one file.
+
+     Client verification should be set as optional otherwise accepted CAs won't be presented to the EGI monitoring.
+     ::
+
+       ssl_client_certificate /etc/ssl/certs/igtf-cas-bundle.pem;
+       ssl_crl /etc/ssl/certs/igtf-crls-bundle.pem;
+       ssl_verify_client optional;
 
    Managing IGTF CAs and CRLs
       IGTF CAs can be obtained from UMD, you can find repo files for your distribution
