@@ -834,7 +834,7 @@ SSM configuration is available at ``/etc/apel``. Defaults should be ok for most 
 Running the services
 ~~~~~~~~~~~~~~~~~~~~
 
-Both caso and ssmsend are run via cron scripts. They are located at ``/etc/cron.d/caso`` and ``/etc/crond.d/ssmsend`` respectively. For convenience there are also two scripts ``/usr/loca/bin/caso-extract.sh`` and ``/usr/local/bin/ssm-send.sh`` that run the docker container with the proper volumes.
+Both caso and ssmsend are run via the root user crontab. For convenience there are two scripts ``/usr/local/bin/caso-extract.sh`` and ``/usr/local/bin/ssm-send.sh`` that run the docker container with the proper volumes.
 
 .. Using individual components
    '''''''''''''''''''''''''''
