@@ -53,7 +53,7 @@ Follow these steps if you are using OpenID Connect to integrate with EGI:
                        ]
                    },
                    {
-                       "type": "OIDC-edu_person_entitlements",
+                       "type": "OIDC-eduperson_entitlement",
                        "regex": true,
                        "any_one_of": [
                            "^urn:mace:egi.eu:group:<vo_name>:role=vm_operator#aai.egi.eu$"
