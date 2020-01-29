@@ -358,7 +358,7 @@ Add that group to the desired local project:
 
     $ openstack role add member --group ops --project ops
 
-Define a mapping of users from EGI Check-in to the group just created and restrict with the ``OIDC-edu_person_entitlements`` the VOs you want to support for that group. Substitute the group id and the allowed entitlements for the adequate values for your deployment:
+Define a mapping of users from EGI Check-in to the group just created and restrict with the ``OIDC-eduperson_entitlement`` the VOs you want to support for that group. Substitute the group id and the allowed entitlements for the adequate values for your deployment:
 
 ::
 
@@ -386,7 +386,7 @@ Define a mapping of users from EGI Check-in to the group just created and restri
                     ]
                 },
                 {
-                    "type": "OIDC-edu_person_entitlements",
+                    "type": "OIDC-eduperson_entitlement",
                     "regex": true,
                     "any_one_of": [
                         "^urn:mace:egi.eu:group:ops:role=vm_operator#aai.egi.eu$"
