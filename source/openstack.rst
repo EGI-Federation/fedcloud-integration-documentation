@@ -408,7 +408,7 @@ Create the mapping in Keystone:
     +-------+----------------------------------------------------------------------------------------------------------------------------------+
     | id    | egi-mapping                                                                                                                      |
     | rules | [{u'remote': [{u'type': u'HTTP_OIDC_SUB'}, {u'type': u'HTTP_OIDC_ISS', u'any_one_of': [u'https://aai-dev.egi.eu/oidc/']},        |
-    |       | {u'regex': True, u'type': u'OIDC-edu_person_entitlements', u'any_one_of': [u'^urn:mace:egi.eu:.*:ops:vm_operator@egi.eu$']}],    |
+    |       | {u'regex': True, u'type': u'OIDC-eduperson_entitlement', u'any_one_of': [u'^urn:mace:egi.eu:.*:ops:vm_operator@egi.eu$']}],      |
     |       | u'local': [{u'group': {u'id': u'89cf5b6708354094942d9d16f0f29f8f'}, u'user': {u'name': u'{0}'}}]}]                               |
     +-------+----------------------------------------------------------------------------------------------------------------------------------+
 
@@ -498,7 +498,7 @@ Configuration can include as many mappings as needed in the json file. Users wil
                     ]
                 },
                 {
-                    "type": "OIDC-edu_person_entitlements",
+                    "type": "OIDC-eduperson_entitlement",
                     "regex": true,
                     "any_one_of": [
                         "^urn:mace:egi.eu:group:ops:role=vm_operator#aai.egi.eu$"
@@ -528,7 +528,7 @@ Configuration can include as many mappings as needed in the json file. Users wil
                     ]
                 },
                 {
-                    "type": "OIDC-edu_person_entitlements",
+                    "type": "OIDC-eduperson_entitlement",
                     "regex": true,
                     "any_one_of": [
                         "^urn:mace:egi.eu:group:fedcloud.egi.eu:role=vm_operator#aai.egi.eu$"
