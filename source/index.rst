@@ -8,7 +8,7 @@ EGI Federated Cloud Integration
 
 This documentation covers how to join the EGI Cloud federation as a provider.
 If you are interested in joining please first contact EGI operations team
-(``operations _at_ egi.eu``), expressing interest and provide few details about:
+(``operations _at_ egi.eu``), expressing interest and providing few details about:
 
 * the projects you may be involved in as cloud provider
 

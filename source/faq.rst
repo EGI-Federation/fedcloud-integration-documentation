@@ -29,10 +29,10 @@ Do I lose control on who can access my resources if I join federated cloud?
 **No**
 
 EGI uses the concept of Virtual Organisation (VO) to group users. The resource
-provider has complete control on which VOs wants to allow into the resources
+provider has complete control on which VOs he wants to allow on its resources
 and which quotas or restrictions to assign to each VO. In the case of OpenStack,
 each VO is mapped to a regular OpenStack project that can be managed as any
-other and are isolated to other projects as you have configured in your system.
+other and are isolated to other projects you may have configured in your deployment.
 Although not recommended, you can even restrict the automatic access of users
 within a VO and manually enable individual members.
 
@@ -46,10 +46,9 @@ In general, the federation requires your cloud management framework to be
 configured to support Federated AAI with EGI Check-in. This may require changes
 in your current setup.
 
-Other components are designed to consume your cloud management framework APIs
-and do not require modification of your provider. For OpenStack, these
+Other components are designed to access your cloud management framework public APIs
+and do not require modification of your deployment. For OpenStack, these
 components can be run on a single VM that encapsulates them for convenience.
-
 
 Which components of my cloud will interact with the federated cloud components?
 -------------------------------------------------------------------------------
@@ -72,7 +71,7 @@ Users will also interact with:
 
 to perform their regular activities.
 
-How my daily operational activities will change?
+How will my daily operational activities change?
 ------------------------------------------------
 
 For the most part daily operations will not change.
@@ -88,7 +87,7 @@ configured with the EGI AAI.
 
 The resource centre will have to comply with the operational and security
 requirements. All the EGI policies aim at implementing service provisioning
-best practices and common requirements. EGI operations may promote campaigns
+best practices and common requirements. EGI operations may conduct campaigns
 targeted to mitigate security vulnerabilities and to update unsupported
 operating system and software. These activities are part of the regular
 activities of a resource centre anyways (also for the non-federated ones). EGI
