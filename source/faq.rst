@@ -21,7 +21,6 @@ Why joining the EGI Cloud?
 * To adopt best practices of multi-cloud federation for the benefit of your
   local users.
 
-
 Do I lose control on who can access my resources if I join federated cloud?
 ---------------------------------------------------------------------------
 
