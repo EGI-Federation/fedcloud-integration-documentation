@@ -3,7 +3,6 @@
 FAQ
 ===
 
-
 Why joining the EGI Cloud?
 --------------------------
 
