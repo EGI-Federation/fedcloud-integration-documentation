@@ -3,6 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. NOTE:: This documentation is obsolete and was replaced by
+          `<https://docs.egi.eu/providers/cloud-compute/>`_.
+
 EGI Federated Cloud Integration
 ===============================
 
