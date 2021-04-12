@@ -1,9 +1,9 @@
-> This documentation is _obsolete_ and was replaced by
-> https://docs.egi.eu/providers/cloud-compute.
-
 # Fedcloud integration documentation
 
-[![Documentation Status](https://readthedocs.org/projects/egi-federated-cloud-integration/badge/?version=latest)](http://egi-federated-cloud-integration.readthedocs.io/en/latest/?badge=latest)
+:exclamation: :exclamation:
+**We are deprecating this repo. This documentation is _obsolete_ and was
+replaced by https://docs.egi.eu/providers/cloud-compute.**
+:exclamation: :exclamation:
 
 Documentation for service providers willing to join FedCloud
 
